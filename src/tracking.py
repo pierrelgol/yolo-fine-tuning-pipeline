@@ -13,6 +13,7 @@ class TrackingSession:
     project_name: str
     run_name: str
     task_name: str
+    group_name: str
 
 
 def start_tracking_run(
@@ -20,6 +21,8 @@ def start_tracking_run(
     task_name: str,
     run_name: str,
     run_config: dict[str, Any],
+    group_name: str | None = None,
+    resume: str = "never",
 ) -> TrackingSession | None:
     if not config.tracking.enabled:
         return None
@@ -30,8 +33,9 @@ def start_tracking_run(
         trackio.init(
             project=config.tracking.project_name,
             name=run_name,
-            group=task_name,
+            group=group_name or task_name,
             config=run_config,
+            resume=resume,
             auto_log_gpu=config.tracking.auto_log_gpu,
             gpu_log_interval=config.tracking.gpu_log_interval_seconds,
         )
@@ -43,6 +47,7 @@ def start_tracking_run(
         project_name=config.tracking.project_name,
         run_name=run_name,
         task_name=task_name,
+        group_name=group_name or task_name,
     )
 
 
@@ -58,7 +63,7 @@ def log_tracking_metrics(
     for key, value in metrics.items():
         if value is None:
             continue
-        filtered_metrics[key] = value
+        filtered_metrics[key] = normalize_tracking_value(value)
 
     if not filtered_metrics:
         return
@@ -71,59 +76,120 @@ def log_tracking_metrics(
         print(f"Trackio logging failed: {error}")
 
 
-def log_tracking_metrics_from_mapping(
+def log_tracking_images(
     session: TrackingSession | None,
-    source_metrics: dict[str, Any],
-    metric_mapping: dict[str, str],
+    image_mapping: dict[str, tuple[Path, str | None]],
     step: int | None = None,
-) -> None:
-    selected_metrics: dict[str, Any] = {}
-    for source_key, target_key in metric_mapping.items():
-        if source_key not in source_metrics:
-            continue
-        selected_metrics[target_key] = source_metrics[source_key]
-
-    log_tracking_metrics(session, selected_metrics, step=step)
-
-
-def log_training_history(
-    session: TrackingSession | None,
-    results_csv_path: Path,
 ) -> None:
     if session is None:
         return
-    if not results_csv_path.exists():
+
+    filtered_payload: dict[str, Any] = {}
+    for key, (image_path, caption) in image_mapping.items():
+        if not image_path.exists():
+            continue
+
+        try:
+            import trackio
+
+            filtered_payload[key] = trackio.Image(image_path, caption=caption)
+        except Exception as error:
+            print(f"Trackio image preparation failed for {image_path}: {error}")
+
+    if not filtered_payload:
         return
 
-    metric_mapping = {
-        "train/box_loss": "train/box_loss",
-        "train/cls_loss": "train/class_loss",
-        "train/dfl_loss": "train/dfl_loss",
-        "metrics/precision(B)": "train/precision",
-        "metrics/recall(B)": "train/recall",
-        "metrics/mAP50(B)": "train/map50",
-        "metrics/mAP50-95(B)": "train/map50_95",
-        "val/box_loss": "validation/box_loss",
-        "val/cls_loss": "validation/class_loss",
-        "val/dfl_loss": "validation/dfl_loss",
-        "lr/pg0": "optimizer/lr_group0",
-    }
+    try:
+        import trackio
 
-    with results_csv_path.open("r", encoding="utf-8", newline="") as file_handle:
+        trackio.log(filtered_payload, step=step)
+    except Exception as error:
+        print(f"Trackio image logging failed: {error}")
+
+
+def log_tracking_table(
+    session: TrackingSession | None,
+    table_name: str,
+    columns: list[str],
+    rows: list[list[Any]],
+    step: int | None = None,
+) -> None:
+    if session is None:
+        return
+    if not rows:
+        return
+
+    try:
+        import pandas
+        import trackio
+
+        normalized_rows = []
+        for row in rows:
+            normalized_rows.append([normalize_tracking_value(value) for value in row])
+
+        dataframe = pandas.DataFrame(normalized_rows, columns=columns)
+        table = trackio.Table(dataframe=dataframe)
+        trackio.log({table_name: table}, step=step)
+    except Exception as error:
+        print(f"Trackio table logging failed: {error}")
+
+
+def log_tracking_key_value_table(
+    session: TrackingSession | None,
+    table_name: str,
+    values: dict[str, Any],
+    step: int | None = None,
+) -> None:
+    rows: list[list[Any]] = []
+    for key, value in values.items():
+        if value is None:
+            continue
+        rows.append([key, normalize_tracking_value(value)])
+
+    log_tracking_table(
+        session=session,
+        table_name=table_name,
+        columns=["name", "value"],
+        rows=rows,
+        step=step,
+    )
+
+
+def log_tracking_table_from_csv(
+    session: TrackingSession | None,
+    table_name: str,
+    csv_path: Path,
+    max_rows: int,
+    step: int | None = None,
+) -> None:
+    if session is None:
+        return
+    if not csv_path.exists():
+        return
+
+    with csv_path.open("r", encoding="utf-8", newline="") as file_handle:
         reader = csv.DictReader(file_handle)
-        for row in reader:
-            cleaned_row = {key.strip(): parse_csv_value(value) for key, value in row.items() if key is not None}
-            epoch_value = cleaned_row.get("epoch")
-            if epoch_value is None:
-                continue
+        if reader.fieldnames is None:
+            return
 
-            epoch_index = int(float(epoch_value))
-            log_tracking_metrics_from_mapping(
-                session=session,
-                source_metrics=cleaned_row,
-                metric_mapping=metric_mapping,
-                step=epoch_index + 1,
-            )
+        table_rows: list[list[Any]] = []
+        for row_index, row in enumerate(reader):
+            if row_index >= max_rows:
+                break
+
+            table_row: list[Any] = []
+            for field_name in reader.fieldnames:
+                raw_value = row.get(field_name)
+                table_row.append(normalize_tracking_value(parse_csv_value(raw_value)))
+            table_rows.append(table_row)
+
+    log_tracking_table(
+        session=session,
+        table_name=table_name,
+        columns=[field_name.strip() for field_name in reader.fieldnames],
+        rows=table_rows,
+        step=step,
+    )
 
 
 def save_tracking_artifacts(
@@ -191,3 +257,29 @@ def parse_csv_value(raw_value: str | None) -> Any:
     if numeric_value.is_integer():
         return int(numeric_value)
     return numeric_value
+
+
+def normalize_tracking_value(value: Any) -> Any:
+    if type(value) in {str, int, float, bool}:
+        return value
+
+    item_method = getattr(value, "item", None)
+    if callable(item_method):
+        try:
+            return normalize_tracking_value(item_method())
+        except Exception:
+            return str(value)
+
+    if isinstance(value, list):
+        return [normalize_tracking_value(item) for item in value]
+
+    if isinstance(value, tuple):
+        return [normalize_tracking_value(item) for item in value]
+
+    if isinstance(value, dict):
+        normalized_mapping: dict[str, Any] = {}
+        for key, item in value.items():
+            normalized_mapping[str(key)] = normalize_tracking_value(item)
+        return normalized_mapping
+
+    return str(value)

@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import random
 import shutil
+from datetime import date
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -164,6 +166,67 @@ def save_class_map(path: Path, mapping: dict[str, int]) -> None:
     ordered_items = sorted(mapping.items(), key=lambda item: item[1])
     ordered_mapping = {name: class_id for name, class_id in ordered_items}
     write_json(path, {"name_to_id": ordered_mapping})
+
+
+def ordered_class_names(class_map: dict[str, int]) -> list[str]:
+    ordered_items = sorted(class_map.items(), key=lambda item: item[1])
+    return [class_name for class_name, _ in ordered_items]
+
+
+def sanitized_name(value: str) -> str:
+    lowercase_value = value.strip().lower()
+    normalized_value = re.sub(r"[^a-z0-9]+", "-", lowercase_value)
+    normalized_value = normalized_value.strip("-")
+    if normalized_value:
+        return normalized_value
+    return "run"
+
+
+def next_run_name(versions_path: Path, model_name: str) -> str:
+    payload: dict[str, int]
+    if versions_path.exists():
+        payload = read_json(versions_path)
+    else:
+        payload = {}
+
+    current_version = int(payload.get("next_version", 1))
+    payload["next_version"] = current_version + 1
+    write_json(versions_path, payload)
+
+    model_label = sanitized_name(Path(model_name).stem)
+    run_date = date.today().isoformat()
+    return f"{model_label}-v{current_version:03d}-{run_date}"
+
+
+def child_run_name(parent_run_name: str, task_name: str) -> str:
+    task_label = sanitized_name(task_name)
+    return f"{parent_run_name}-{task_label}"
+
+
+def latest_train_run_name(train_dir: Path, latest_run_path: Path, fallback_name: str) -> str:
+    if latest_run_path.exists():
+        payload = read_json(latest_run_path)
+        run_name = payload.get("run_name")
+        if isinstance(run_name, str) and run_name.strip():
+            return run_name
+
+    candidate_run_dirs: list[Path] = []
+    if train_dir.exists():
+        for child_path in train_dir.iterdir():
+            if not child_path.is_dir():
+                continue
+            if child_path.name == "data":
+                continue
+            weights_dir = child_path / "weights"
+            if not weights_dir.exists():
+                continue
+            candidate_run_dirs.append(child_path)
+
+    if candidate_run_dirs:
+        candidate_run_dirs.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+        return candidate_run_dirs[0].name
+
+    return fallback_name
 
 
 def resolve_dataset_directory(project_root: Path, dataset_root: Path, dataset_path: Path) -> Path:

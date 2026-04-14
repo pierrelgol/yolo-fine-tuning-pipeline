@@ -26,8 +26,8 @@ train *args:
 eval *args:
     uv run python cli.py eval {{args}}
 
-infer dataset_dir *args:
-    uv run python cli.py infer {{dataset_dir}} {{args}}
+infer *args:
+    uv run python cli.py infer {{args}}
 
 prepare *args:
     uv run python cli.py prepare {{args}}

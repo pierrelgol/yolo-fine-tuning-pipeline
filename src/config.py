@@ -12,31 +12,45 @@ class PathConfig:
     image_dir: Path
     dataset_dir: Path
     raw_dir: Path
+    run_versions_path: Path
     coco128_dir: Path
     annotation_dir: Path
     augmented_dir: Path
-    training_dir: Path
-    runs_dir: Path
+    train_dir: Path
+    eval_dir: Path
+    infer_dir: Path
     coco128_images_dir: Path
     coco128_labels_dir: Path
+    coco128_dataset_yaml_path: Path
     annotation_images_dir: Path
     annotation_labels_dir: Path
-    augmented_images_dir: Path
-    augmented_labels_dir: Path
-    training_train_images_dir: Path
-    training_train_labels_dir: Path
-    training_val_images_dir: Path
-    training_val_labels_dir: Path
     annotation_classes_path: Path
     annotation_manifest_path: Path
+    augmented_images_dir: Path
+    augmented_labels_dir: Path
+    augmented_train_images_dir: Path
+    augmented_train_labels_dir: Path
+    augmented_val_images_dir: Path
+    augmented_val_labels_dir: Path
     augmented_classes_path: Path
     augmented_manifest_path: Path
-    training_dataset_yaml_path: Path
-    coco128_dataset_yaml_path: Path
-    training_manifest_path: Path
+    train_data_dir: Path
+    train_images_dir: Path
+    train_labels_dir: Path
+    train_train_images_dir: Path
+    train_train_labels_dir: Path
+    train_val_images_dir: Path
+    train_val_labels_dir: Path
+    train_dataset_yaml_path: Path
+    train_manifest_path: Path
+    train_metrics_path: Path
+    train_results_csv_path: Path
+    train_best_weights_path: Path
+    train_latest_weights_path: Path
+    train_latest_run_path: Path
     train_runs_dir: Path
-    eval_runs_dir: Path
-    infer_runs_dir: Path
+    eval_latest_metrics_path: Path
+    infer_latest_manifest_path: Path
 
 
 @dataclass(frozen=True)
@@ -86,18 +100,17 @@ class TrainConfig:
     epochs: int
     batch_size: int
     device: str
-    run_name: str
     hyperparameters: TrainHyperparameterConfig
 
 
 @dataclass(frozen=True)
 class EvalConfig:
-    run_name: str
+    dataset_yaml: str
 
 
 @dataclass(frozen=True)
 class InferConfig:
-    run_name: str
+    dataset_name: str
 
 
 @dataclass(frozen=True)
@@ -106,6 +119,9 @@ class TrackingConfig:
     project_name: str
     auto_log_gpu: bool
     gpu_log_interval_seconds: float
+    log_every_n_steps: int
+    max_logged_images: int
+    max_logged_table_rows: int
 
 
 @dataclass(frozen=True)
@@ -137,12 +153,18 @@ def load_config(config_path: Path | None = None) -> AppConfig:
     image_dir = resolve_path(project_root, paths_payload.get("image_dir", "image"))
     dataset_dir = resolve_path(project_root, paths_payload.get("dataset_dir", "dataset"))
     source_dir = project_root / "src"
+
     raw_dir = dataset_dir / "raw"
     coco128_dir = dataset_dir / "coco128"
     annotation_dir = dataset_dir / "annotation"
     augmented_dir = dataset_dir / "augmented"
-    training_dir = dataset_dir / "training"
-    runs_dir = dataset_dir / "runs"
+    train_dir = dataset_dir / "train"
+    eval_dir = dataset_dir / "eval"
+    infer_dir = dataset_dir / "infer"
+
+    train_data_dir = train_dir / "data"
+    train_images_dir = train_data_dir / "images"
+    train_labels_dir = train_data_dir / "labels"
 
     path_config = PathConfig(
         project_root=project_root,
@@ -150,31 +172,45 @@ def load_config(config_path: Path | None = None) -> AppConfig:
         image_dir=image_dir,
         dataset_dir=dataset_dir,
         raw_dir=raw_dir,
+        run_versions_path=dataset_dir / "run_versions.json",
         coco128_dir=coco128_dir,
         annotation_dir=annotation_dir,
         augmented_dir=augmented_dir,
-        training_dir=training_dir,
-        runs_dir=runs_dir,
+        train_dir=train_dir,
+        eval_dir=eval_dir,
+        infer_dir=infer_dir,
         coco128_images_dir=coco128_dir / "images" / "train2017",
         coco128_labels_dir=coco128_dir / "labels" / "train2017",
+        coco128_dataset_yaml_path=coco128_dir / "dataset.yaml",
         annotation_images_dir=annotation_dir / "images" / "train2017",
         annotation_labels_dir=annotation_dir / "labels" / "train2017",
-        augmented_images_dir=augmented_dir / "images" / "train2017",
-        augmented_labels_dir=augmented_dir / "labels" / "train2017",
-        training_train_images_dir=training_dir / "images" / "train2017",
-        training_train_labels_dir=training_dir / "labels" / "train2017",
-        training_val_images_dir=training_dir / "images" / "val2017",
-        training_val_labels_dir=training_dir / "labels" / "val2017",
         annotation_classes_path=annotation_dir / "classes.json",
         annotation_manifest_path=annotation_dir / "manifest.json",
+        augmented_images_dir=augmented_dir / "images" / "train2017",
+        augmented_labels_dir=augmented_dir / "labels" / "train2017",
+        augmented_train_images_dir=augmented_dir / "images" / "train2017",
+        augmented_train_labels_dir=augmented_dir / "labels" / "train2017",
+        augmented_val_images_dir=augmented_dir / "images" / "val2017",
+        augmented_val_labels_dir=augmented_dir / "labels" / "val2017",
         augmented_classes_path=augmented_dir / "classes.json",
         augmented_manifest_path=augmented_dir / "manifest.json",
-        training_dataset_yaml_path=training_dir / "dataset.yaml",
-        coco128_dataset_yaml_path=coco128_dir / "dataset.yaml",
-        training_manifest_path=training_dir / "manifest.json",
-        train_runs_dir=runs_dir / "train",
-        eval_runs_dir=runs_dir / "eval",
-        infer_runs_dir=runs_dir / "infer",
+        train_data_dir=train_data_dir,
+        train_images_dir=train_images_dir,
+        train_labels_dir=train_labels_dir,
+        train_train_images_dir=train_images_dir / "train2017",
+        train_train_labels_dir=train_labels_dir / "train2017",
+        train_val_images_dir=train_images_dir / "val2017",
+        train_val_labels_dir=train_labels_dir / "val2017",
+        train_dataset_yaml_path=train_dir / "dataset.yaml",
+        train_manifest_path=train_dir / "manifest.json",
+        train_metrics_path=train_dir / "metrics.json",
+        train_results_csv_path=train_dir / "results.csv",
+        train_best_weights_path=train_dir / "best.pt",
+        train_latest_weights_path=train_dir / "latest.pt",
+        train_latest_run_path=train_dir / "latest_run.json",
+        train_runs_dir=train_dir,
+        eval_latest_metrics_path=eval_dir / "latest_metrics.json",
+        infer_latest_manifest_path=infer_dir / "latest_manifest.json",
     )
 
     fetch_config = FetchConfig(
@@ -189,9 +225,8 @@ def load_config(config_path: Path | None = None) -> AppConfig:
         model_name=str(train_payload.get("model_name", "yolo26n.pt")),
         image_size=int(train_payload.get("image_size", 640)),
         epochs=int(train_payload.get("epochs", 10)),
-        batch_size=int(train_payload.get("batch_size", 16)),
+        batch_size=int(train_payload.get("batch_size", 8)),
         device=str(train_payload.get("device", "auto")),
-        run_name=str(train_payload.get("run_name", "train")),
         hyperparameters=TrainHyperparameterConfig(
             patience=int(train_hyperparameters_payload.get("patience", 100)),
             optimizer=str(train_hyperparameters_payload.get("optimizer", "auto")),
@@ -216,16 +251,19 @@ def load_config(config_path: Path | None = None) -> AppConfig:
             mosaic_probability=float(train_hyperparameters_payload.get("mosaic_probability", 1.0)),
             mixup_probability=float(train_hyperparameters_payload.get("mixup_probability", 0.0)),
             copy_paste_probability=float(train_hyperparameters_payload.get("copy_paste_probability", 0.0)),
-            workers=int(train_hyperparameters_payload.get("workers", 8)),
+            workers=int(train_hyperparameters_payload.get("workers", 0)),
         ),
     )
-    eval_config = EvalConfig(run_name=str(eval_payload.get("run_name", "eval")))
-    infer_config = InferConfig(run_name=str(infer_payload.get("run_name", "infer")))
+    eval_config = EvalConfig(dataset_yaml=str(eval_payload.get("dataset_yaml", "dataset/train/dataset.yaml")))
+    infer_config = InferConfig(dataset_name=str(infer_payload.get("dataset_name", "augmented")))
     tracking_config = TrackingConfig(
         enabled=bool(tracking_payload.get("enabled", True)),
         project_name=str(tracking_payload.get("project_name", "yolo-fine-tuning-pipeline")),
         auto_log_gpu=bool(tracking_payload.get("auto_log_gpu", True)),
         gpu_log_interval_seconds=float(tracking_payload.get("gpu_log_interval_seconds", 10.0)),
+        log_every_n_steps=max(1, int(tracking_payload.get("log_every_n_steps", 10))),
+        max_logged_images=int(tracking_payload.get("max_logged_images", 6)),
+        max_logged_table_rows=int(tracking_payload.get("max_logged_table_rows", 200)),
     )
 
     return AppConfig(

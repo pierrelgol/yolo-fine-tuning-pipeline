@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+from dataclasses import dataclass
 import json
 import os
 from pathlib import Path
+import random
 import shutil
 import sys
+from typing import Any
 
 import torch
 import yaml
@@ -16,23 +19,31 @@ from src.common import (
     ensure_dir,
     image_label_path,
     load_class_map,
+    next_run_name,
     non_empty_file,
+    ordered_class_names,
     parse_yolo_labels,
     save_yolo_labels,
-    split_items,
-    stable_name,
-    yolo_label_line,
+    write_json,
 )
 from src.config import AppConfig
 from src.tracking import (
     alert_tracking_failure,
     finish_tracking_run,
+    log_tracking_images,
+    log_tracking_key_value_table,
     log_tracking_metrics,
-    log_tracking_metrics_from_mapping,
-    log_training_history,
+    log_tracking_table_from_csv,
     save_tracking_artifacts,
     start_tracking_run,
 )
+
+
+@dataclass(frozen=True)
+class DatasetSample:
+    image_path: Path
+    label_path: Path | None
+    source_name: str
 
 
 def train_model(
@@ -43,65 +54,57 @@ def train_model(
     image_size: int | None = None,
     batch_size: int | None = None,
     device: str | None = None,
-    run_name: str | None = None,
     force: bool = False,
 ) -> Path:
-    selected_dataset_yaml_path = dataset_yaml_path or build_training_dataset(config)
     selected_model_name = model_name or config.train.model_name
     selected_epochs = epochs if epochs is not None else config.train.epochs
     selected_image_size = image_size if image_size is not None else config.train.image_size
     selected_batch_size = batch_size if batch_size is not None else config.train.batch_size
     requested_device = device or config.train.device
     selected_device = resolve_training_device(requested_device)
-    selected_run_name = run_name or config.train.run_name
-    hyperparameters = config.train.hyperparameters
-    selected_workers = resolve_training_workers(hyperparameters.workers)
+    selected_workers = resolve_training_workers(config.train.hyperparameters.workers)
 
+    selected_dataset_yaml_path = dataset_yaml_path or build_training_dataset(config)
     if not selected_dataset_yaml_path.exists():
-        raise FileNotFoundError(f"Dataset config not found: {selected_dataset_yaml_path}")
+        raise FileNotFoundError(f"Training dataset config not found: {selected_dataset_yaml_path}")
+
+    selected_run_name = next_run_name(config.paths.run_versions_path, selected_model_name)
+    run_dir = config.paths.train_runs_dir / selected_run_name
+    if run_dir.exists() and not force:
+        raise FileExistsError(f"Training run already exists: {run_dir}")
 
     print(training_device_summary(requested_device, selected_device))
-    print(training_worker_summary(hyperparameters.workers, selected_workers))
-
-    run_dir = ensure_dir(config.paths.train_runs_dir / selected_run_name)
-    metrics_path = run_dir / "metrics.json"
-
-    if training_run_is_complete(run_dir) and not force:
-        print(f"Skipping training, completed run already exists: {run_dir}")
-        print(metrics_path)
-        return metrics_path
+    print(training_worker_summary(config.train.hyperparameters.workers, selected_workers))
+    print(f"Training run: {selected_run_name}")
 
     configure_tracking_environment(config)
     tracking_session = start_tracking_run(
         config=config,
         task_name="train",
         run_name=selected_run_name,
-        run_config=build_training_tracking_config(
-            dataset_yaml_path=selected_dataset_yaml_path,
+        group_name=selected_run_name,
+        run_config=build_tracking_config(
+            config=config,
+            run_name=selected_run_name,
             model_name=selected_model_name,
+            dataset_yaml_path=selected_dataset_yaml_path,
             epochs=selected_epochs,
             image_size=selected_image_size,
             batch_size=selected_batch_size,
             requested_device=requested_device,
             selected_device=selected_device,
             workers=selected_workers,
-            hyperparameters=hyperparameters,
         ),
     )
 
     try:
         model = YOLO(selected_model_name)
-    except Exception as error:
-        message = (
-            f"Unable to initialize model '{selected_model_name}'. "
-            "Install a compatible Ultralytics version or override the model in config.toml."
+        register_training_callbacks(
+            model=model,
+            tracking_session=tracking_session,
+            log_every_n_steps=config.tracking.log_every_n_steps,
         )
-        alert_tracking_failure(tracking_session, "Training initialization failed", message)
-        finish_tracking_run(tracking_session)
-        raise RuntimeError(message) from error
 
-    try:
-        should_resume_run = run_dir.exists() and any(run_dir.iterdir()) and not training_run_is_complete(run_dir) and not force
         training_results = model.train(
             data=str(selected_dataset_yaml_path),
             epochs=selected_epochs,
@@ -110,73 +113,50 @@ def train_model(
             device=selected_device,
             project=str(config.paths.train_runs_dir),
             name=selected_run_name,
-            exist_ok=force or should_resume_run,
-            resume=should_resume_run,
+            exist_ok=force,
             plots=True,
-            patience=hyperparameters.patience,
-            optimizer=hyperparameters.optimizer,
-            lr0=hyperparameters.initial_learning_rate,
-            lrf=hyperparameters.final_learning_rate_factor,
-            momentum=hyperparameters.momentum,
-            weight_decay=hyperparameters.weight_decay,
-            warmup_epochs=hyperparameters.warmup_epochs,
-            box=hyperparameters.box_loss_gain,
-            cls=hyperparameters.class_loss_gain,
-            dfl=hyperparameters.dfl_loss_gain,
-            hsv_h=hyperparameters.hue_augmentation,
-            hsv_s=hyperparameters.saturation_augmentation,
-            hsv_v=hyperparameters.value_augmentation,
-            degrees=hyperparameters.rotation_degrees,
-            translate=hyperparameters.translation_fraction,
-            scale=hyperparameters.scaling_gain,
-            shear=hyperparameters.shear_degrees,
-            perspective=hyperparameters.perspective_fraction,
-            flipud=hyperparameters.vertical_flip_probability,
-            fliplr=hyperparameters.horizontal_flip_probability,
-            mosaic=hyperparameters.mosaic_probability,
-            mixup=hyperparameters.mixup_probability,
-            copy_paste=hyperparameters.copy_paste_probability,
+            save=True,
+            patience=config.train.hyperparameters.patience,
+            optimizer=config.train.hyperparameters.optimizer,
+            lr0=config.train.hyperparameters.initial_learning_rate,
+            lrf=config.train.hyperparameters.final_learning_rate_factor,
+            momentum=config.train.hyperparameters.momentum,
+            weight_decay=config.train.hyperparameters.weight_decay,
+            warmup_epochs=config.train.hyperparameters.warmup_epochs,
+            box=config.train.hyperparameters.box_loss_gain,
+            cls=config.train.hyperparameters.class_loss_gain,
+            dfl=config.train.hyperparameters.dfl_loss_gain,
+            hsv_h=config.train.hyperparameters.hue_augmentation,
+            hsv_s=config.train.hyperparameters.saturation_augmentation,
+            hsv_v=config.train.hyperparameters.value_augmentation,
+            degrees=config.train.hyperparameters.rotation_degrees,
+            translate=config.train.hyperparameters.translation_fraction,
+            scale=config.train.hyperparameters.scaling_gain,
+            shear=config.train.hyperparameters.shear_degrees,
+            perspective=config.train.hyperparameters.perspective_fraction,
+            flipud=config.train.hyperparameters.vertical_flip_probability,
+            fliplr=config.train.hyperparameters.horizontal_flip_probability,
+            mosaic=config.train.hyperparameters.mosaic_probability,
+            mixup=config.train.hyperparameters.mixup_probability,
+            copy_paste=config.train.hyperparameters.copy_paste_probability,
             workers=selected_workers,
         )
 
         metrics_payload = dict(getattr(training_results, "results_dict", {}) or {})
-        metrics_path.write_text(json.dumps(metrics_payload, indent=2, sort_keys=True), encoding="utf-8")
+        write_training_outputs(config, run_dir, metrics_payload)
+        write_latest_training_run_metadata(
+            config=config,
+            run_name=selected_run_name,
+            model_name=selected_model_name,
+            run_dir=run_dir,
+            dataset_yaml_path=selected_dataset_yaml_path,
+        )
+        log_training_summary(config, tracking_session, run_dir, metrics_payload)
 
-        log_training_history(tracking_session, run_dir / "results.csv")
-        log_tracking_metrics(
-            tracking_session,
-            {
-                "dataset/train_images": len(discover_images(config.paths.training_train_images_dir)),
-                "dataset/val_images": len(discover_images(config.paths.training_val_images_dir)),
-            },
-        )
-        log_tracking_metrics_from_mapping(
-            tracking_session,
-            metrics_payload,
-            {
-                "metrics/precision(B)": "summary/precision",
-                "metrics/recall(B)": "summary/recall",
-                "metrics/mAP50(B)": "summary/map50",
-                "metrics/mAP50-95(B)": "summary/map50_95",
-                "val/box_loss": "summary/val_box_loss",
-                "val/cls_loss": "summary/val_class_loss",
-                "val/dfl_loss": "summary/val_dfl_loss",
-                "fitness": "summary/fitness",
-            },
-        )
-        save_tracking_artifacts(
-            tracking_session,
-            [
-                metrics_path,
-                run_dir / "results.csv",
-                run_dir / "weights" / "best.pt",
-                config.paths.training_dataset_yaml_path,
-                config.paths.training_manifest_path,
-            ],
-        )
-
-        print(f"Training complete. Metrics written to {metrics_path}")
-        return metrics_path
+        print(f"Training dataset: {config.paths.train_dir}")
+        print(f"Best weights: {config.paths.train_best_weights_path}")
+        print(f"Latest weights: {config.paths.train_latest_weights_path}")
+        return config.paths.train_metrics_path
     except Exception as error:
         alert_tracking_failure(tracking_session, "Training failed", str(error))
         raise
@@ -185,213 +165,335 @@ def train_model(
 
 
 def build_training_dataset(config: AppConfig) -> Path:
-    if not config.paths.coco128_dir.exists():
-        raise FileNotFoundError(f"Base dataset directory not found: {config.paths.coco128_dir}. Run setup before train.")
-
-    clear_directory(config.paths.training_dir)
-    ensure_dir(config.paths.training_train_images_dir)
-    ensure_dir(config.paths.training_train_labels_dir)
-    ensure_dir(config.paths.training_val_images_dir)
-    ensure_dir(config.paths.training_val_labels_dir)
-    ensure_dir(config.paths.training_dir / "predictions" / "train2017")
-    ensure_dir(config.paths.training_dir / "predictions" / "val2017")
-
-    base_class_names = load_class_names_from_dataset_yaml(config.paths.coco128_dataset_yaml_path)
-    annotation_class_map = load_annotation_class_map(config)
-    merged_class_names, local_to_global_class_id = merge_annotation_classes(base_class_names, annotation_class_map)
-
-    copy_base_dataset_into_training(config)
-    copy_optional_dataset_into_training(
-        image_dir=config.paths.annotation_images_dir,
-        label_dir=config.paths.annotation_labels_dir,
-        source_prefix="annotation",
-        local_to_global_class_id=local_to_global_class_id,
-        destination_image_dir=config.paths.training_train_images_dir,
-        destination_label_dir=config.paths.training_train_labels_dir,
-    )
-    copy_optional_dataset_into_training(
-        image_dir=config.paths.augmented_images_dir,
-        label_dir=config.paths.augmented_labels_dir,
-        source_prefix="augmented",
-        local_to_global_class_id=local_to_global_class_id,
-        destination_image_dir=config.paths.training_train_images_dir,
-        destination_label_dir=config.paths.training_train_labels_dir,
-    )
-
-    write_training_dataset_yaml(config, merged_class_names)
-    write_training_manifest(config, merged_class_names)
-    return config.paths.training_dataset_yaml_path
-
-
-def clear_directory(directory: Path) -> None:
-    if directory.exists():
-        shutil.rmtree(directory)
-    ensure_dir(directory)
-
-
-def copy_base_dataset_into_training(config: AppConfig) -> None:
-    image_paths = discover_images(config.paths.coco128_images_dir)
-    train_images, validation_images = split_items(image_paths, config.setup.train_split, config.setup.random_seed)
-
-    for image_path in train_images:
-        copy_base_sample(
-            image_path=image_path,
-            source_image_dir=config.paths.coco128_images_dir,
-            source_label_dir=config.paths.coco128_labels_dir,
-            destination_image_dir=config.paths.training_train_images_dir,
-            destination_label_dir=config.paths.training_train_labels_dir,
+    class_map = load_class_map(config.paths.annotation_classes_path)
+    class_names = ordered_class_names(class_map)
+    if not class_names:
+        raise FileNotFoundError(
+            f"No annotation classes found in {config.paths.annotation_classes_path}. Run annotate before train."
         )
 
-    for image_path in validation_images:
-        copy_base_sample(
-            image_path=image_path,
-            source_image_dir=config.paths.coco128_images_dir,
-            source_label_dir=config.paths.coco128_labels_dir,
-            destination_image_dir=config.paths.training_val_images_dir,
-            destination_label_dir=config.paths.training_val_labels_dir,
+    dataset_samples = collect_training_samples(config)
+    if not dataset_samples:
+        raise FileNotFoundError("No training images found. Run annotate or augment before train.")
+
+    if count_positive_samples(dataset_samples) == 0:
+        raise ValueError("No labeled annotations found for training. Add at least one bounding box before train.")
+
+    clear_training_data(config)
+    ensure_dir(config.paths.train_train_images_dir)
+    ensure_dir(config.paths.train_train_labels_dir)
+    ensure_dir(config.paths.train_val_images_dir)
+    ensure_dir(config.paths.train_val_labels_dir)
+
+    train_samples, val_samples = split_training_samples(
+        samples=dataset_samples,
+        train_ratio=config.setup.train_split,
+        random_seed=config.setup.random_seed,
+    )
+
+    valid_class_ids = set(class_map.values())
+    copy_training_split(train_samples, config.paths.train_train_images_dir, config.paths.train_train_labels_dir, valid_class_ids)
+    copy_training_split(val_samples, config.paths.train_val_images_dir, config.paths.train_val_labels_dir, valid_class_ids)
+
+    write_training_dataset_yaml(config, class_names)
+    write_training_manifest(config, class_names, train_samples, val_samples)
+    return config.paths.train_dataset_yaml_path
+
+
+def collect_training_samples(config: AppConfig) -> list[DatasetSample]:
+    samples: list[DatasetSample] = []
+    samples.extend(collect_samples_from_directory(config.paths.annotation_images_dir, config.paths.annotation_labels_dir, "annotation"))
+    samples.extend(
+        collect_samples_from_directory(
+            config.paths.augmented_train_images_dir,
+            config.paths.augmented_train_labels_dir,
+            "augmented",
         )
+    )
+    return samples
 
 
-def copy_base_sample(
-    image_path: Path,
-    source_image_dir: Path,
-    source_label_dir: Path,
-    destination_image_dir: Path,
-    destination_label_dir: Path,
-) -> None:
-    destination_image_path = destination_image_dir / image_path.name
-    destination_label_path = destination_label_dir / f"{image_path.stem}.txt"
-    copy_image(image_path, destination_image_path)
-
-    source_label_path = image_label_path(image_path, source_image_dir, source_label_dir)
-    if source_label_path.exists():
-        copy_image(source_label_path, destination_label_path)
-    else:
-        save_yolo_labels(destination_label_path, [])
-
-
-def load_annotation_class_map(config: AppConfig) -> dict[str, int]:
-    if not config.paths.annotation_classes_path.exists():
-        return {}
-    return load_class_map(config.paths.annotation_classes_path)
-
-
-def merge_annotation_classes(
-    base_class_names: list[str],
-    annotation_class_map: dict[str, int],
-) -> tuple[list[str], dict[int, int]]:
-    merged_class_names = list(base_class_names)
-    local_to_global_class_id: dict[int, int] = {}
-
-    ordered_items = sorted(annotation_class_map.items(), key=lambda item: item[1])
-    for class_name, local_class_id in ordered_items:
-        if class_name in merged_class_names:
-            global_class_id = merged_class_names.index(class_name)
-        else:
-            global_class_id = len(merged_class_names)
-            merged_class_names.append(class_name)
-        local_to_global_class_id[local_class_id] = global_class_id
-
-    return merged_class_names, local_to_global_class_id
-
-
-def copy_optional_dataset_into_training(
-    image_dir: Path,
-    label_dir: Path,
-    source_prefix: str,
-    local_to_global_class_id: dict[int, int],
-    destination_image_dir: Path,
-    destination_label_dir: Path,
-) -> None:
+def collect_samples_from_directory(image_dir: Path, label_dir: Path, source_name: str) -> list[DatasetSample]:
     if not image_dir.exists():
-        return
-
-    for image_path in discover_images(image_dir):
-        source_label_path = image_label_path(image_path, image_dir, label_dir)
-        annotations = parse_yolo_labels(source_label_path)
-        if not annotations:
-            continue
-
-        image_suffix = image_path.suffix.lower() or ".jpg"
-        destination_stem = stable_name(source_prefix, image_path.as_posix(), suffix="")
-        destination_image_path = destination_image_dir / f"{source_prefix}_{destination_stem}{image_suffix}"
-        destination_label_path = destination_label_dir / f"{source_prefix}_{destination_stem}.txt"
-
-        copy_image(image_path, destination_image_path)
-        remapped_lines: list[str] = []
-        for local_class_id, bbox in annotations:
-            global_class_id = local_to_global_class_id.get(local_class_id, local_class_id)
-            remapped_lines.append(yolo_label_line(global_class_id, bbox))
-        save_yolo_labels(destination_label_path, remapped_lines)
-
-
-def load_class_names_from_dataset_yaml(dataset_yaml_path: Path) -> list[str]:
-    if not dataset_yaml_path.exists():
         return []
 
-    payload = yaml.safe_load(dataset_yaml_path.read_text(encoding="utf-8")) or {}
-    raw_names = payload.get("names", {})
-    if isinstance(raw_names, dict):
-        ordered_items = sorted(raw_names.items(), key=lambda item: int(item[0]))
-        return [str(name) for _, name in ordered_items]
-    if isinstance(raw_names, list):
-        return [str(name) for name in raw_names]
-    return []
+    samples: list[DatasetSample] = []
+    for image_path in discover_images(image_dir):
+        label_path = image_label_path(image_path, image_dir, label_dir)
+        if label_path.exists():
+            sample_label_path: Path | None = label_path
+        else:
+            sample_label_path = None
+
+        samples.append(
+            DatasetSample(
+                image_path=image_path,
+                label_path=sample_label_path,
+                source_name=source_name,
+            )
+        )
+
+    return samples
+
+
+def count_positive_samples(samples: list[DatasetSample]) -> int:
+    positive_sample_count = 0
+    for sample in samples:
+        if sample.label_path is None:
+            continue
+        if parse_yolo_labels(sample.label_path):
+            positive_sample_count += 1
+    return positive_sample_count
+
+
+def clear_training_data(config: AppConfig) -> None:
+    remove_directory_if_present(config.paths.train_data_dir)
+    remove_file_if_present(config.paths.train_dataset_yaml_path)
+    remove_file_if_present(config.paths.train_manifest_path)
+
+
+def split_training_samples(
+    samples: list[DatasetSample],
+    train_ratio: float,
+    random_seed: int,
+) -> tuple[list[DatasetSample], list[DatasetSample]]:
+    if len(samples) == 1:
+        only_sample = samples[0]
+        return [only_sample], [only_sample]
+
+    shuffled_samples = list(samples)
+    random_generator = random.Random(random_seed)
+    random_generator.shuffle(shuffled_samples)
+
+    split_index = int(len(shuffled_samples) * train_ratio)
+    split_index = max(1, split_index)
+    split_index = min(len(shuffled_samples) - 1, split_index)
+
+    train_samples = sorted(shuffled_samples[:split_index], key=lambda sample: sample.image_path.name)
+    val_samples = sorted(shuffled_samples[split_index:], key=lambda sample: sample.image_path.name)
+    return train_samples, val_samples
+
+
+def copy_training_split(
+    samples: list[DatasetSample],
+    destination_image_dir: Path,
+    destination_label_dir: Path,
+    valid_class_ids: set[int],
+) -> None:
+    for sample in samples:
+        destination_image_path = destination_image_dir / sample.image_path.name
+        destination_label_path = destination_label_dir / f"{sample.image_path.stem}.txt"
+
+        copy_image(sample.image_path, destination_image_path)
+        label_lines = build_filtered_label_lines(sample.label_path, valid_class_ids)
+        save_yolo_labels(destination_label_path, label_lines)
+
+
+def build_filtered_label_lines(label_path: Path | None, valid_class_ids: set[int]) -> list[str]:
+    if label_path is None or not label_path.exists():
+        return []
+
+    filtered_lines: list[str] = []
+    for class_id, bbox in parse_yolo_labels(label_path):
+        if class_id not in valid_class_ids:
+            continue
+        x_center, y_center, width, height = bbox
+        filtered_lines.append(f"{class_id} {x_center:.6f} {y_center:.6f} {width:.6f} {height:.6f}")
+
+    return filtered_lines
 
 
 def write_training_dataset_yaml(config: AppConfig, class_names: list[str]) -> None:
-    dataset_payload = {
-        "path": str(config.paths.training_dir.resolve()),
+    payload = {
+        "path": str(config.paths.train_data_dir.resolve()),
         "train": "images/train2017",
         "val": "images/val2017",
-        "names": {index: name for index, name in enumerate(class_names)},
+        "names": {index: class_name for index, class_name in enumerate(class_names)},
     }
-    config.paths.training_dataset_yaml_path.write_text(yaml.safe_dump(dataset_payload, sort_keys=False), encoding="utf-8")
+    config.paths.train_dataset_yaml_path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
 
 
-def write_training_manifest(config: AppConfig, class_names: list[str]) -> None:
+def write_training_manifest(
+    config: AppConfig,
+    class_names: list[str],
+    train_samples: list[DatasetSample],
+    val_samples: list[DatasetSample],
+) -> None:
     manifest = {
-        "training_dir": str(config.paths.training_dir),
-        "train_image_dir": str(config.paths.training_train_images_dir),
-        "train_label_dir": str(config.paths.training_train_labels_dir),
-        "val_image_dir": str(config.paths.training_val_images_dir),
-        "val_label_dir": str(config.paths.training_val_labels_dir),
-        "num_train_images": len(discover_images(config.paths.training_train_images_dir)),
-        "num_val_images": len(discover_images(config.paths.training_val_images_dir)),
-        "num_classes": len(class_names),
+        "dataset_dir": str(config.paths.train_dir),
+        "data_dir": str(config.paths.train_data_dir),
+        "train_image_dir": str(config.paths.train_train_images_dir),
+        "train_label_dir": str(config.paths.train_train_labels_dir),
+        "val_image_dir": str(config.paths.train_val_images_dir),
+        "val_label_dir": str(config.paths.train_val_labels_dir),
+        "classes": class_names,
+        "num_train_images": len(train_samples),
+        "num_val_images": len(val_samples),
     }
-    config.paths.training_manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
+    config.paths.train_manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
-def build_training_tracking_config(
-    dataset_yaml_path: Path,
+def register_training_callbacks(
+    model: YOLO,
+    tracking_session,
+    log_every_n_steps: int,
+) -> None:
+    callback_state = {"global_step": 0}
+
+    def on_train_batch_end(trainer) -> None:
+        callback_state["global_step"] += 1
+        global_step = callback_state["global_step"]
+        if global_step % log_every_n_steps != 0:
+            return
+
+        batch_metrics = trainer.label_loss_items(trainer.tloss)
+        batch_metrics["train/epoch"] = trainer.epoch + 1
+        batch_metrics["optimizer/lr"] = float(trainer.optimizer.param_groups[0]["lr"])
+        log_tracking_metrics(tracking_session, batch_metrics, step=global_step)
+
+    def on_fit_epoch_end(trainer) -> None:
+        epoch_metrics = dict(getattr(trainer, "metrics", {}) or {})
+        epoch_metrics["train/epoch"] = trainer.epoch + 1
+        epoch_metrics["train/fitness"] = getattr(trainer, "fitness", None)
+        learning_rates = getattr(trainer, "lr", {}) or {}
+        if "lr/pg0" in learning_rates:
+            epoch_metrics["optimizer/lr_group0"] = learning_rates["lr/pg0"]
+        log_tracking_metrics(tracking_session, epoch_metrics, step=callback_state["global_step"])
+
+    model.add_callback("on_train_batch_end", on_train_batch_end)
+    model.add_callback("on_fit_epoch_end", on_fit_epoch_end)
+
+
+def log_training_summary(
+    config: AppConfig,
+    tracking_session,
+    run_dir: Path,
+    metrics_payload: dict[str, Any],
+) -> None:
+    log_tracking_metrics(
+        tracking_session,
+        {
+            "dataset/train_images": len(discover_images(config.paths.train_train_images_dir)),
+            "dataset/val_images": len(discover_images(config.paths.train_val_images_dir)),
+        },
+    )
+    log_tracking_key_value_table(
+        tracking_session,
+        "tables/training_summary",
+        build_training_summary(metrics_payload),
+    )
+    log_tracking_table_from_csv(
+        tracking_session,
+        "tables/training_history",
+        config.paths.train_results_csv_path,
+        max_rows=config.tracking.max_logged_table_rows,
+    )
+    log_tracking_images(
+        tracking_session,
+        build_training_image_mapping(run_dir, config.tracking.max_logged_images),
+    )
+    save_tracking_artifacts(
+        tracking_session,
+        [
+            config.paths.train_metrics_path,
+            config.paths.train_results_csv_path,
+            config.paths.train_best_weights_path,
+            config.paths.train_latest_weights_path,
+            config.paths.train_latest_run_path,
+            config.paths.train_dataset_yaml_path,
+            config.paths.train_manifest_path,
+            run_dir / "metrics.json",
+        ],
+    )
+
+
+def write_training_outputs(config: AppConfig, run_dir: Path, metrics_payload: dict[str, Any]) -> None:
+    ensure_dir(config.paths.train_dir)
+    metrics_json = json.dumps(metrics_payload, indent=2, sort_keys=True)
+    config.paths.train_metrics_path.write_text(metrics_json, encoding="utf-8")
+    (run_dir / "metrics.json").write_text(metrics_json, encoding="utf-8")
+
+    copy_required_file(run_dir / "results.csv", config.paths.train_results_csv_path)
+    copy_required_file(run_dir / "weights" / "best.pt", config.paths.train_best_weights_path)
+    copy_required_file(run_dir / "weights" / "last.pt", config.paths.train_latest_weights_path)
+
+
+def write_latest_training_run_metadata(
+    config: AppConfig,
+    run_name: str,
     model_name: str,
+    run_dir: Path,
+    dataset_yaml_path: Path,
+) -> None:
+    payload = {
+        "run_name": run_name,
+        "model_name": model_name,
+        "run_dir": str(run_dir),
+        "dataset_yaml_path": str(dataset_yaml_path),
+        "best_weights_path": str(config.paths.train_best_weights_path),
+        "latest_weights_path": str(config.paths.train_latest_weights_path),
+    }
+    write_json(config.paths.train_latest_run_path, payload)
+
+
+def build_tracking_config(
+    config: AppConfig,
+    run_name: str,
+    model_name: str,
+    dataset_yaml_path: Path,
     epochs: int,
     image_size: int,
     batch_size: int,
     requested_device: str,
     selected_device: str,
     workers: int,
-    hyperparameters,
-) -> dict:
+) -> dict[str, Any]:
     return {
         "task": "train",
-        "dataset_yaml_path": str(dataset_yaml_path),
+        "run_name": run_name,
         "model_name": model_name,
+        "dataset_yaml_path": str(dataset_yaml_path),
         "epochs": epochs,
         "image_size": image_size,
         "batch_size": batch_size,
         "requested_device": requested_device,
         "selected_device": selected_device,
         "workers": workers,
-        "optimizer": hyperparameters.optimizer,
-        "patience": hyperparameters.patience,
-        "initial_learning_rate": hyperparameters.initial_learning_rate,
-        "final_learning_rate_factor": hyperparameters.final_learning_rate_factor,
-        "weight_decay": hyperparameters.weight_decay,
-        "mosaic_probability": hyperparameters.mosaic_probability,
-        "mixup_probability": hyperparameters.mixup_probability,
+        "log_every_n_steps": config.tracking.log_every_n_steps,
     }
+
+
+def build_training_summary(metrics_payload: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "precision": metrics_payload.get("metrics/precision(B)"),
+        "recall": metrics_payload.get("metrics/recall(B)"),
+        "map50": metrics_payload.get("metrics/mAP50(B)"),
+        "map50_95": metrics_payload.get("metrics/mAP50-95(B)"),
+        "val_box_loss": metrics_payload.get("val/box_loss"),
+        "val_class_loss": metrics_payload.get("val/cls_loss"),
+        "val_dfl_loss": metrics_payload.get("val/dfl_loss"),
+        "fitness": metrics_payload.get("fitness"),
+    }
+
+
+def build_training_image_mapping(run_dir: Path, max_logged_images: int) -> dict[str, tuple[Path, str | None]]:
+    candidate_images = [
+        ("images/training_curves", run_dir / "results.png", "Training curves."),
+        ("images/confusion_matrix", run_dir / "confusion_matrix.png", "Validation confusion matrix."),
+        ("images/precision_recall_curve", run_dir / "PR_curve.png", "Precision recall curve."),
+        ("images/train_batch_preview", run_dir / "train_batch0.jpg", "Training batch preview."),
+        ("images/val_prediction_preview", run_dir / "val_batch0_pred.jpg", "Validation prediction preview."),
+    ]
+
+    image_mapping: dict[str, tuple[Path, str | None]] = {}
+    for key, image_path, caption in candidate_images:
+        if len(image_mapping) >= max_logged_images:
+            break
+        if not image_path.exists():
+            continue
+        image_mapping[key] = (image_path, caption)
+
+    return image_mapping
 
 
 def configure_tracking_environment(config: AppConfig) -> None:
@@ -450,16 +552,8 @@ def build_cuda_unavailable_message(requested_device: str) -> str:
 
 def resolve_training_workers(configured_workers: int) -> int:
     normalized_workers = max(0, int(configured_workers))
-
     if sys.platform != "win32":
         return normalized_workers
-
-    if normalized_workers == 0:
-        return 0
-
-    # Windows data-loader workers are substantially more fragile because each
-    # worker starts a new Python process. Keeping this at 0 avoids the
-    # MemoryError / thread startup failures seen on this project.
     return 0
 
 
@@ -473,7 +567,17 @@ def training_worker_summary(configured_workers: int, selected_workers: int) -> s
     )
 
 
-def training_run_is_complete(run_dir: Path) -> bool:
-    weights_path = run_dir / "weights" / "best.pt"
-    results_csv_path = run_dir / "results.csv"
-    return non_empty_file(weights_path) and non_empty_file(results_csv_path)
+def copy_required_file(source_path: Path, destination_path: Path) -> None:
+    if not non_empty_file(source_path):
+        raise FileNotFoundError(f"Expected training output not found: {source_path}")
+    copy_image(source_path, destination_path)
+
+
+def remove_directory_if_present(directory: Path) -> None:
+    if directory.exists():
+        shutil.rmtree(directory)
+
+
+def remove_file_if_present(path: Path) -> None:
+    if path.exists():
+        path.unlink()

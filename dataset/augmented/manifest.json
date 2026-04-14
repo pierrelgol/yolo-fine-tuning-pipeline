@@ -1,905 +1,910 @@
 {
-  "image_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017",
-  "label_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017",
+  "train_image_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017",
+  "train_label_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017",
+  "val_image_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017",
+  "val_label_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017",
   "classes_path": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\classes.json",
   "background_dir": "dataset\\coco128",
-  "prediction_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\predictions\\train2017",
+  "train_prediction_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\predictions\\train2017",
+  "val_prediction_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\predictions\\val2017",
   "num_generated_samples": 128,
+  "num_train_samples": 102,
+  "num_val_samples": 26,
   "generated_samples": [
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000009.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e45ce5b1ae12021a.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e45ce5b1ae12021a.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_71fdfe65fab26c04.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_71fdfe65fab26c04.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000025.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_ed7dbb696d8fd9a4.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_ed7dbb696d8fd9a4.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a1d8c12ddebc1c61.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a1d8c12ddebc1c61.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000030.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_889f026a913add08.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_889f026a913add08.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000034.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_1a6524a0e4b99e4c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_1a6524a0e4b99e4c.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000036.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0386f9bc70258f61.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0386f9bc70258f61.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9c70589c4377d781.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9c70589c4377d781.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000042.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_3f9016574f4fa9e0.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_3f9016574f4fa9e0.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_19a0b92c6ee35775.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_19a0b92c6ee35775.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000049.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cd89f1fdbaaf89ec.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cd89f1fdbaaf89ec.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_55b659d11fbe47dc.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_55b659d11fbe47dc.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000061.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9d4e2524a837b4b8.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9d4e2524a837b4b8.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0672035e3bc58a1c.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0672035e3bc58a1c.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000064.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_df72f16ffc1b7c9b.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_df72f16ffc1b7c9b.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4fcc575d71c4b6db.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4fcc575d71c4b6db.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000071.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5ae0bde04802d764.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5ae0bde04802d764.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c972769f055b724d.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c972769f055b724d.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000072.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_32d742657beca1b2.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_32d742657beca1b2.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000073.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b10961d70c9e950c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b10961d70c9e950c.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_7576b5b03e6954f5.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_7576b5b03e6954f5.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000074.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c54d5a7813491faa.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c54d5a7813491faa.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000077.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4ad1aad6aaa69f0a.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4ad1aad6aaa69f0a.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_79264fd423dea2c2.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_79264fd423dea2c2.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000078.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a935f3afe38245a6.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a935f3afe38245a6.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c9f01f99a32c07c6.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c9f01f99a32c07c6.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000081.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_37bd3996e45a3943.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_37bd3996e45a3943.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_dd52eb605dd9345c.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_dd52eb605dd9345c.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000086.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0e2c4b9d7b2287fa.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0e2c4b9d7b2287fa.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000089.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9e761f339d35dd46.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9e761f339d35dd46.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c5c3c339583431f8.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c5c3c339583431f8.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000092.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4ce9a061f11567f8.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4ce9a061f11567f8.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_77b3b73db59de447.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_77b3b73db59de447.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000094.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_33ef5e88ad9028c5.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_33ef5e88ad9028c5.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_53c1e9d4a98fb8d3.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_53c1e9d4a98fb8d3.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000109.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_fe08c172c35fc636.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_fe08c172c35fc636.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0d5850602cc807d9.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0d5850602cc807d9.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000110.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b7eb5a0ffd3a756e.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b7eb5a0ffd3a756e.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_965212b0bb39ab4a.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_965212b0bb39ab4a.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000113.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_8be3dce1edb48b43.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_8be3dce1edb48b43.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_38a4758501214309.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_38a4758501214309.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000127.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c81d52afbfadc99f.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c81d52afbfadc99f.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_10542bbfc48894af.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_10542bbfc48894af.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000133.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_03315519684ab8ff.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_03315519684ab8ff.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000136.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_794e7ac5bd3e607f.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_794e7ac5bd3e607f.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_969a210d8fcd54fa.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_969a210d8fcd54fa.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000138.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_da18d86b9efbdcd4.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_da18d86b9efbdcd4.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000142.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a7c372585151fb4c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a7c372585151fb4c.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000143.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2e0f982ee7c72f88.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2e0f982ee7c72f88.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000144.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_20d87657b6624ba5.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_20d87657b6624ba5.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a4eeac91a8866f85.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a4eeac91a8866f85.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000149.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0a658741cf5bd4ff.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0a658741cf5bd4ff.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000151.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_7407570d04318c9c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_7407570d04318c9c.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_55f6ca7159a35981.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_55f6ca7159a35981.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000154.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5f3e1513c5fd8d90.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5f3e1513c5fd8d90.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_3601201eb8ad9928.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_3601201eb8ad9928.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000164.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2ce16f6d515a0129.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2ce16f6d515a0129.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_41caeae338b80555.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_41caeae338b80555.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000165.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_688e1f89f0d785d8.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_688e1f89f0d785d8.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000192.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4a6a535fe9aed065.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4a6a535fe9aed065.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_07ab012bdaaab8ed.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_07ab012bdaaab8ed.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000194.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_6177ea5577c8cd7b.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_6177ea5577c8cd7b.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_fda23e1b3a57ceae.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_fda23e1b3a57ceae.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000196.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_30e5e4eb1aab1bf2.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_30e5e4eb1aab1bf2.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cd9aa5aa7baab632.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cd9aa5aa7baab632.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000201.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_3a17691b65d98e32.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_3a17691b65d98e32.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b6fa4ba72a7f784c.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b6fa4ba72a7f784c.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000208.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4564567c6d8cf072.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4564567c6d8cf072.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2a5f90b0d937628d.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2a5f90b0d937628d.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000241.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4e423e7f3982bd2d.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4e423e7f3982bd2d.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cda0849e3d42b212.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cda0849e3d42b212.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000247.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_d26e3993f710e5df.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_d26e3993f710e5df.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_045c4146a77ddbbc.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_045c4146a77ddbbc.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000250.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5243026c0ed3a0d8.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5243026c0ed3a0d8.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0e412de173d988d2.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0e412de173d988d2.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000257.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_f1862b80314d41b1.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_f1862b80314d41b1.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b0a8d69c976b784b.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b0a8d69c976b784b.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000260.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4fd22f947c7c89f4.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4fd22f947c7c89f4.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_ac83df9b0566e09f.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_ac83df9b0566e09f.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000263.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_17067a671dd75863.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_17067a671dd75863.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_bbfbda9261528490.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_bbfbda9261528490.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000283.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4338d084a53cd6e7.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4338d084a53cd6e7.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_65a6a2a69dc43588.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_65a6a2a69dc43588.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000294.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_01f9efc20aa03b96.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_01f9efc20aa03b96.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_d68af9534983aca2.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_d68af9534983aca2.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000307.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e28701518cd7a84c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e28701518cd7a84c.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_fb3d181b27ed7320.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_fb3d181b27ed7320.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000308.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9fefc28cb76c87a6.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9fefc28cb76c87a6.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a834cf7da42aee40.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a834cf7da42aee40.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000309.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e007314651c9a800.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e007314651c9a800.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_f6f3b2b0ec820292.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_f6f3b2b0ec820292.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000312.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4c4606c9337779c6.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4c4606c9337779c6.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_8ba41888f381a304.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_8ba41888f381a304.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000315.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_7b05414d8e71bc32.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_7b05414d8e71bc32.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_ca7d895db308e156.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_ca7d895db308e156.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000321.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0d473e65ef1cf73c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0d473e65ef1cf73c.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000322.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4fd344f0f7d59151.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4fd344f0f7d59151.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_df21cb3e3321f794.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_df21cb3e3321f794.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000326.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c2e0ed7ef540cd14.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c2e0ed7ef540cd14.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cb2502df4f2eb4a7.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cb2502df4f2eb4a7.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000328.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_716197a158f00e65.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_716197a158f00e65.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_f70e1ec067f31920.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_f70e1ec067f31920.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000332.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_671a312a07986083.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_671a312a07986083.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a2d0f8afbb58c64e.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a2d0f8afbb58c64e.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000338.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5aa9f269ef3b58d2.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5aa9f269ef3b58d2.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4643994e7af549da.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4643994e7af549da.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000349.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2cfcc79c8f69599c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2cfcc79c8f69599c.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2390f113c5d809c9.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2390f113c5d809c9.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000357.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_21a430e7d14d6a75.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_21a430e7d14d6a75.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9773a6bebd2aa34f.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9773a6bebd2aa34f.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000359.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_da425f0ec054837d.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_da425f0ec054837d.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a60cd9b0600c2f15.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a60cd9b0600c2f15.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000360.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_0cbaf8d223fe5965.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_0cbaf8d223fe5965.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cb02ce43a2955108.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cb02ce43a2955108.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000368.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_f606dfd88d6d4fba.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_f606dfd88d6d4fba.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000370.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_425588d22d43393d.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_425588d22d43393d.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_53c4c080d048bfd9.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_53c4c080d048bfd9.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000382.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_7cd08fb149531013.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_7cd08fb149531013.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b84a62431036b97e.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b84a62431036b97e.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000384.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2ad646c1e3e5c74d.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2ad646c1e3e5c74d.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_822fd8e5c2da06a5.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_822fd8e5c2da06a5.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000387.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_37f83e89bff8b3e3.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_37f83e89bff8b3e3.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_56d8c9ef839edad6.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_56d8c9ef839edad6.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000389.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_65c1b46b47b11a53.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_65c1b46b47b11a53.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000394.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_15b5e8e950e14aa2.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_15b5e8e950e14aa2.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5a6273104f088d80.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5a6273104f088d80.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000395.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cdfb245e8ac0458e.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cdfb245e8ac0458e.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000397.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_827874d66420f1ea.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_827874d66420f1ea.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b5179aabf09e469b.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b5179aabf09e469b.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000400.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c1391697abfff7ba.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c1391697abfff7ba.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a168867eddaef7de.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a168867eddaef7de.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000404.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_307402a0b878da16.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_307402a0b878da16.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_edb1e8c17bd633a4.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_edb1e8c17bd633a4.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000415.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_bc3b52fea155ab43.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_bc3b52fea155ab43.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000419.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_6d4e82ae865d3bc8.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_6d4e82ae865d3bc8.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_7e89a9e12156b709.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_7e89a9e12156b709.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000428.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_adeaad5bc8dd7069.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_adeaad5bc8dd7069.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000431.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_db03f431b3a8152b.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_db03f431b3a8152b.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e81fe0815e047e22.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e81fe0815e047e22.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000436.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2bbf4e5177d2063f.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2bbf4e5177d2063f.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b6b2f7eedf1d51c8.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b6b2f7eedf1d51c8.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000438.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_f6a075e171084b91.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_f6a075e171084b91.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2ad8eff958a3b4fb.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2ad8eff958a3b4fb.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000443.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_1859128662e893dc.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_1859128662e893dc.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4cce211d4a7852e6.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4cce211d4a7852e6.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000446.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b418b9794ea5511e.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b418b9794ea5511e.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_12a38ffbded68e9b.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_12a38ffbded68e9b.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000450.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_1c90c10d3665c117.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_1c90c10d3665c117.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_4809b529709ece7b.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_4809b529709ece7b.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000459.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_74f40d03e8f2156f.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_74f40d03e8f2156f.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_92f2dcba62f42479.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_92f2dcba62f42479.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000471.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_eff47115239d93ed.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_eff47115239d93ed.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a952b24ea9ae9582.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a952b24ea9ae9582.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000472.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_67f812ee836aaca7.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_67f812ee836aaca7.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000474.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5e1e810786c6dad4.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5e1e810786c6dad4.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_2fe5d8c76d3285f6.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_2fe5d8c76d3285f6.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000486.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_1982f7e397a95cb5.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_1982f7e397a95cb5.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_234990bff02f2c3b.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_234990bff02f2c3b.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000488.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_52c8d64f3c3328bf.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_52c8d64f3c3328bf.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_8e3b363b44f48f40.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_8e3b363b44f48f40.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000490.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e80533b5b19b18b0.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e80533b5b19b18b0.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a16652b68b6ddd07.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a16652b68b6ddd07.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000491.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_798d138b6cf0f15c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_798d138b6cf0f15c.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_d04d6ab8db311707.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_d04d6ab8db311707.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000502.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cc0fd57b2c862185.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cc0fd57b2c862185.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c136b4e9c1d58687.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c136b4e9c1d58687.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000508.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_85645310fcc08779.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_85645310fcc08779.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_52856ea7ac38ac54.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_52856ea7ac38ac54.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000510.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e5b5ad22a5224abe.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e5b5ad22a5224abe.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000514.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_bc43d1395602ee36.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_bc43d1395602ee36.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5271e846c23da468.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5271e846c23da468.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000520.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_162da26c5e0eca58.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_162da26c5e0eca58.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a81606e351f62bf8.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a81606e351f62bf8.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000529.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e8bb897e66b9a361.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e8bb897e66b9a361.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_d1ef4cd6e7a3e2b9.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_d1ef4cd6e7a3e2b9.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000531.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_8b382667e4168ad1.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_8b382667e4168ad1.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_d4a643021b39d43b.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_d4a643021b39d43b.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000532.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_ad631d31524fe01d.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_ad631d31524fe01d.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_3ff1095e506719e2.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_3ff1095e506719e2.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000536.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_491460e6848c995a.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_491460e6848c995a.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_996f6c9ec5049963.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_996f6c9ec5049963.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000540.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_7b086ceeeb5285d7.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_7b086ceeeb5285d7.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_892fecee7e72bf76.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_892fecee7e72bf76.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000542.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cb700441094699a2.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cb700441094699a2.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5f489ad6d665b374.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5f489ad6d665b374.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000544.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_8e4d1d71468ec21a.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_8e4d1d71468ec21a.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9a2a4d600388dbae.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9a2a4d600388dbae.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000560.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5b25cdc07e9eecce.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5b25cdc07e9eecce.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_ffbff228ca95a87a.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_ffbff228ca95a87a.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000562.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_f390b969cd7c06f2.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_f390b969cd7c06f2.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_d9ed2ce8a757df10.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_d9ed2ce8a757df10.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000564.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e260644b5febcd5e.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e260644b5febcd5e.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_af8ee75ba140f9a6.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_af8ee75ba140f9a6.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000569.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_baebfcc2f028c3e7.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_baebfcc2f028c3e7.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cf9e5d419840b063.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cf9e5d419840b063.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000572.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_5c6642cd6b2cdae7.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_5c6642cd6b2cdae7.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_db789187c7946447.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_db789187c7946447.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000575.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_dcf466f4b44ec203.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_dcf466f4b44ec203.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_1ff609bf9b26b86a.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_1ff609bf9b26b86a.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000581.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_df8481f3dac3d678.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_df8481f3dac3d678.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000584.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_753588cbc499bbc3.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_753588cbc499bbc3.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a4909319aec23582.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a4909319aec23582.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000589.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_1a1c3772ac469073.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_1a1c3772ac469073.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_fac8e76bf026154f.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_fac8e76bf026154f.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000590.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9ecb4db8340f010c.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9ecb4db8340f010c.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_cd00c4be77c5f57f.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_cd00c4be77c5f57f.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000595.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e19790400b500be0.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e19790400b500be0.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000597.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b8c36c1985291186.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b8c36c1985291186.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_105aee7d25285330.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_105aee7d25285330.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000599.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b0d7de71f4ed973e.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b0d7de71f4ed973e.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000605.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_8b2f88bff7cac5e5.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_8b2f88bff7cac5e5.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_18263b359cb4b372.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_18263b359cb4b372.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000612.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_189ddc51d0c327e7.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_189ddc51d0c327e7.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c3b025b3b084b7b5.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c3b025b3b084b7b5.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000620.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_31fda2fb876c4bbe.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_31fda2fb876c4bbe.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_e39cac4c91d7aa4c.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_e39cac4c91d7aa4c.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000623.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_503b3d3f255bd520.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_503b3d3f255bd520.txt",
-      "class_name": "train"
-    },
-    {
-      "background": "dataset\\coco128\\images\\train2017\\000000000625.jpg",
-      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_95af68dbe5bfd5cb.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_95af68dbe5bfd5cb.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c1d849337e15e921.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c1d849337e15e921.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000626.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_061c513afe0468a2.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_061c513afe0468a2.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b2d4ec4cbd722905.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b2d4ec4cbd722905.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000629.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_c203d817b4f235ce.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_c203d817b4f235ce.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b762dfefadee525e.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b762dfefadee525e.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000634.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_08159e003398a75b.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_08159e003398a75b.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_a279498b3d048fe3.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_a279498b3d048fe3.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000636.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_86fae7d98410bb46.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_86fae7d98410bb46.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_d17363a4f4f99aa6.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_d17363a4f4f99aa6.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000034.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_9b5a6cbc1da6a78e.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_9b5a6cbc1da6a78e.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000036.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_79c8e820f5095975.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_79c8e820f5095975.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000073.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_8aec90f52b9a88f0.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_8aec90f52b9a88f0.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000077.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_6f82ee49e2dcd792.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_6f82ee49e2dcd792.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000089.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_00c80f348a79c7d6.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_00c80f348a79c7d6.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000136.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_979e4a8db8a1f8d8.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_979e4a8db8a1f8d8.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000142.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_94942a2d81b61cb7.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_94942a2d81b61cb7.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000143.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_b74926874ed0a974.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_b74926874ed0a974.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000144.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_b1bae5ea799708d0.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_b1bae5ea799708d0.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000151.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_beaaef0ead051e4d.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_beaaef0ead051e4d.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000192.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_3c57b31308881ed7.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_3c57b31308881ed7.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000322.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_cdf96f0893fd2921.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_cdf96f0893fd2921.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000370.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_0a24e522fe58006b.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_0a24e522fe58006b.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000394.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_6e5fe4b0fdb6e6b7.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_6e5fe4b0fdb6e6b7.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000397.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_243087001c5df7ef.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_243087001c5df7ef.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000419.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_450a49d1111b3858.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_450a49d1111b3858.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000431.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_979b77b047d92446.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_979b77b047d92446.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000474.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_976130b37b8d0c64.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_976130b37b8d0c64.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000514.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_99775671306ddf9a.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_99775671306ddf9a.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000584.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_0134dd3d5da7da2c.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_0134dd3d5da7da2c.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000597.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_90f9fd0f821897e0.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_90f9fd0f821897e0.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000605.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_f2e85d9b050d3fef.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_f2e85d9b050d3fef.txt",
+      "class_name": "train"
+    },
+    {
+      "background": "dataset\\coco128\\images\\train2017\\000000000625.jpg",
+      "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_4928a6c69b63cd45.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_4928a6c69b63cd45.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000641.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_57a951a4ccc3090f.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_57a951a4ccc3090f.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_33216e4363d9c708.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_33216e4363d9c708.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000643.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_9b92b552f3e546c0.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_9b92b552f3e546c0.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_d7425af754e75700.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_d7425af754e75700.txt",
       "class_name": "train"
     },
     {
       "background": "dataset\\coco128\\images\\train2017\\000000000650.jpg",
       "source_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017\\image.jpeg",
-      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\train2017\\augmented_b18cf7f54dbad908.jpg",
-      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\train2017\\augmented_b18cf7f54dbad908.txt",
+      "output_image": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\images\\val2017\\augmented_e7ecf2dc6b170f16.jpg",
+      "output_label": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\augmented\\labels\\val2017\\augmented_e7ecf2dc6b170f16.txt",
       "class_name": "train"
     }
   ]

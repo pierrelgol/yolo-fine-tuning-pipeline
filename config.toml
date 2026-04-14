@@ -14,9 +14,8 @@ random_seed = 42
 model_name = "yolo26n.pt"
 image_size = 640
 epochs = 10
-batch_size = 16
-device = "0"
-run_name = "train"
+batch_size = 8
+device = "auto"
 
 [train.hyperparameters]
 patience = 100
@@ -45,13 +44,16 @@ copy_paste_probability = 0.0
 workers = 0
 
 [eval]
-run_name = "eval"
+dataset_yaml = "dataset/train/dataset.yaml"
 
 [infer]
-run_name = "infer"
+dataset_name = "augmented"
 
 [tracking]
 enabled = true
-project_name = "yolo-fine-tuning-pipeline"
+project_name = "yolo-fine-tuning"
 auto_log_gpu = true
 gpu_log_interval_seconds = 10.0
+log_every_n_steps = 1
+max_logged_images = 6
+max_logged_table_rows = 200

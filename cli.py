@@ -25,40 +25,37 @@ def build_parser() -> argparse.ArgumentParser:
     fetch_parser.add_argument("--url")
     fetch_parser.add_argument("--filename")
 
-    setup_parser = subparsers.add_parser("setup", help="Prepare the dataset split and labels")
+    setup_parser = subparsers.add_parser("setup", help="Unpack the base dataset into dataset/coco128")
     setup_parser.add_argument("--archive", type=Path)
     setup_parser.add_argument("--force", action="store_true")
 
-    annotate_parser = subparsers.add_parser("annotate", help="Open the image annotation GUI")
+    annotate_parser = subparsers.add_parser("annotate", help="Open the annotation GUI")
     annotate_parser.add_argument("--source-dir", type=Path)
 
-    augment_parser = subparsers.add_parser("augment", help="Use annotations to build augmented training samples")
+    augment_parser = subparsers.add_parser("augment", help="Build augmented samples from the annotation dataset")
     augment_parser.add_argument("background_dir", type=Path)
     augment_parser.add_argument("--source-image-dir", type=Path)
     augment_parser.add_argument("--source-label-dir", type=Path)
     augment_parser.add_argument("--classes-path", type=Path)
     augment_parser.add_argument("--output-dir", type=Path)
 
-    train_parser = subparsers.add_parser("train", help="Train a YOLO model")
+    train_parser = subparsers.add_parser("train", help="Train with annotation classes only")
     train_parser.add_argument("--dataset-yaml", type=Path)
     train_parser.add_argument("--model")
     train_parser.add_argument("--epochs", type=int)
     train_parser.add_argument("--imgsz", type=int)
     train_parser.add_argument("--batch", type=int)
     train_parser.add_argument("--device")
-    train_parser.add_argument("--name")
     train_parser.add_argument("--force", action="store_true")
 
-    eval_parser = subparsers.add_parser("eval", help="Evaluate trained weights")
+    eval_parser = subparsers.add_parser("eval", help="Evaluate the latest trained model")
     eval_parser.add_argument("--dataset-yaml", type=Path)
     eval_parser.add_argument("--weights", type=Path)
-    eval_parser.add_argument("--name")
     eval_parser.add_argument("--force", action="store_true")
 
-    infer_parser = subparsers.add_parser("infer", help="Run inference on a dataset directory")
-    infer_parser.add_argument("dataset_dir", type=Path)
+    infer_parser = subparsers.add_parser("infer", help="Run inference on a dataset folder")
+    infer_parser.add_argument("dataset_dir", nargs="?", type=Path)
     infer_parser.add_argument("--weights", type=Path)
-    infer_parser.add_argument("--name")
     infer_parser.add_argument("--force", action="store_true")
 
     prepare_parser = subparsers.add_parser("prepare", help="Run fetch and setup in sequence")
@@ -67,10 +64,10 @@ def build_parser() -> argparse.ArgumentParser:
     prepare_parser.add_argument("--archive", type=Path)
     prepare_parser.add_argument("--force", action="store_true")
 
-    subparsers.add_parser("clean", help="Remove all generated dataset artifacts and local downloaded weights")
-    subparsers.add_parser("prune", help="Remove training, evaluation, inference, and prediction outputs")
+    subparsers.add_parser("clean", help="Remove every generated artifact")
+    subparsers.add_parser("prune", help="Remove train, eval, infer, and prediction outputs")
 
-    visualize_parser = subparsers.add_parser("visualize", help="Visualize a dataset directory")
+    visualize_parser = subparsers.add_parser("visualize", help="Open the dataset visualizer")
     visualize_parser.add_argument("dataset_dir", type=Path)
     visualize_parser.add_argument("--hide-labels", action="store_true")
     visualize_parser.add_argument("--hide-predictions", action="store_true")
@@ -88,18 +85,11 @@ def main() -> None:
         return
 
     if args.command == "setup":
-        prepare_dataset(
-            config,
-            archive_path=args.archive,
-            force=args.force,
-        )
+        prepare_dataset(config, archive_path=args.archive, force=args.force)
         return
 
     if args.command == "annotate":
-        launch_annotation_gui(
-            config,
-            image_dir=args.source_dir,
-        )
+        launch_annotation_gui(config, image_dir=args.source_dir)
         return
 
     if args.command == "augment":
@@ -122,7 +112,6 @@ def main() -> None:
             image_size=args.imgsz,
             batch_size=args.batch,
             device=args.device,
-            run_name=args.name,
             force=args.force,
         )
         return
@@ -132,7 +121,6 @@ def main() -> None:
             config,
             dataset_yaml_path=args.dataset_yaml,
             weights_path=args.weights,
-            run_name=args.name,
             force=args.force,
         )
         return
@@ -142,18 +130,13 @@ def main() -> None:
             config,
             dataset_subdir=args.dataset_dir,
             weights_path=args.weights,
-            run_name=args.name,
             force=args.force,
         )
         return
 
     if args.command == "prepare":
         fetch_dataset(config, dataset_url=args.url, archive_name=args.filename)
-        prepare_dataset(
-            config,
-            archive_path=args.archive,
-            force=args.force,
-        )
+        prepare_dataset(config, archive_path=args.archive, force=args.force)
         return
 
     if args.command == "clean":

@@ -13,8 +13,9 @@ def clean_artifacts(config: AppConfig) -> None:
 
 
 def prune_artifacts(config: AppConfig) -> None:
-    remove_directory_if_present(config.paths.training_dir)
-    remove_directory_if_present(config.paths.runs_dir)
+    remove_directory_if_present(config.paths.train_dir)
+    remove_directory_if_present(config.paths.eval_dir)
+    remove_directory_if_present(config.paths.infer_dir)
 
     clear_prediction_outputs(config.paths.coco128_dir)
     clear_prediction_outputs(config.paths.annotation_dir)
@@ -30,16 +31,12 @@ def remove_directory_if_present(directory: Path) -> None:
 
 
 def remove_local_model_file_if_present(config: AppConfig) -> None:
-    model_name = config.train.model_name
-    model_path = Path(model_name)
+    model_path = Path(config.train.model_name)
+    if not model_path.is_absolute():
+        model_path = (config.paths.project_root / model_path).resolve()
 
-    if model_path.is_absolute():
-        candidate_path = model_path
-    else:
-        candidate_path = config.paths.project_root / model_path
-
-    if candidate_path.exists() and candidate_path.is_file():
-        candidate_path.unlink()
+    if model_path.exists() and model_path.is_file():
+        model_path.unlink()
 
 
 def clear_prediction_outputs(dataset_dir: Path) -> None:
@@ -47,7 +44,7 @@ def clear_prediction_outputs(dataset_dir: Path) -> None:
     predictions_manifest_path = dataset_dir / "predictions_manifest.json"
 
     if predictions_dir.exists():
-        remove_directory_if_present(predictions_dir)
+        shutil.rmtree(predictions_dir)
         predictions_dir.mkdir(parents=True, exist_ok=True)
 
     if predictions_manifest_path.exists():

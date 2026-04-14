@@ -3,12 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass
 import json
 from pathlib import Path
+import random
 import shutil
 
 from PIL import Image
 
 from src.common import (
-    copy_image,
     discover_images,
     ensure_dir,
     image_label_path,
@@ -30,6 +30,12 @@ class SourceAnnotation:
     bbox: tuple[float, float, float, float]
 
 
+@dataclass
+class PlannedAugmentedSample:
+    annotation: SourceAnnotation
+    background_path: Path
+
+
 def augment_with_annotations(
     config: AppConfig,
     background_dir: Path,
@@ -46,9 +52,12 @@ def augment_with_annotations(
     selected_output_manifest_path = selected_output_dir / "manifest.json"
 
     clear_directory(selected_output_dir)
-    output_image_dir = ensure_dir(selected_output_dir / "images" / "train2017")
-    output_label_dir = ensure_dir(selected_output_dir / "labels" / "train2017")
-    output_prediction_dir = ensure_dir(selected_output_dir / "predictions" / "train2017")
+    output_train_image_dir = ensure_dir(selected_output_dir / "images" / "train2017")
+    output_train_label_dir = ensure_dir(selected_output_dir / "labels" / "train2017")
+    output_val_image_dir = ensure_dir(selected_output_dir / "images" / "val2017")
+    output_val_label_dir = ensure_dir(selected_output_dir / "labels" / "val2017")
+    output_train_prediction_dir = ensure_dir(selected_output_dir / "predictions" / "train2017")
+    output_val_prediction_dir = ensure_dir(selected_output_dir / "predictions" / "val2017")
 
     class_map = load_class_map(selected_classes_path)
     annotations = collect_source_annotations(selected_image_dir, selected_label_dir, class_map)
@@ -61,32 +70,37 @@ def augment_with_annotations(
 
     save_class_map(selected_output_classes_path, class_map)
 
-    generated_samples: list[dict] = []
-    for annotation in annotations:
-        for background_path in background_paths:
-            image_path, label_path = create_augmented_sample(
-                annotation=annotation,
-                background_path=background_path,
-                output_image_dir=output_image_dir,
-                output_label_dir=output_label_dir,
-            )
-            generated_samples.append(
-                {
-                    "background": str(background_path),
-                    "source_image": str(annotation.image_path),
-                    "output_image": str(image_path),
-                    "output_label": str(label_path),
-                    "class_name": annotation.class_name,
-                }
-            )
+    planned_samples = build_planned_samples(annotations, background_paths)
+    train_samples, val_samples = split_planned_samples(
+        planned_samples=planned_samples,
+        train_ratio=config.setup.train_split,
+        random_seed=config.setup.random_seed,
+    )
+
+    generated_train_samples = write_augmented_samples(
+        planned_samples=train_samples,
+        output_image_dir=output_train_image_dir,
+        output_label_dir=output_train_label_dir,
+    )
+    generated_val_samples = write_augmented_samples(
+        planned_samples=val_samples,
+        output_image_dir=output_val_image_dir,
+        output_label_dir=output_val_label_dir,
+    )
+    generated_samples = generated_train_samples + generated_val_samples
 
     manifest = {
-        "image_dir": str(output_image_dir),
-        "label_dir": str(output_label_dir),
+        "train_image_dir": str(output_train_image_dir),
+        "train_label_dir": str(output_train_label_dir),
+        "val_image_dir": str(output_val_image_dir),
+        "val_label_dir": str(output_val_label_dir),
         "classes_path": str(selected_output_classes_path),
         "background_dir": str(background_dir),
-        "prediction_dir": str(output_prediction_dir),
+        "train_prediction_dir": str(output_train_prediction_dir),
+        "val_prediction_dir": str(output_val_prediction_dir),
         "num_generated_samples": len(generated_samples),
+        "num_train_samples": len(generated_train_samples),
+        "num_val_samples": len(generated_val_samples),
         "generated_samples": generated_samples,
     }
     selected_output_manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
@@ -98,6 +112,76 @@ def clear_directory(directory: Path) -> None:
     if directory.exists():
         shutil.rmtree(directory)
     ensure_dir(directory)
+
+
+def build_planned_samples(
+    annotations: list[SourceAnnotation],
+    background_paths: list[Path],
+) -> list[PlannedAugmentedSample]:
+    planned_samples: list[PlannedAugmentedSample] = []
+    for annotation in annotations:
+        for background_path in background_paths:
+            planned_samples.append(
+                PlannedAugmentedSample(
+                    annotation=annotation,
+                    background_path=background_path,
+                )
+            )
+    return planned_samples
+
+
+def split_planned_samples(
+    planned_samples: list[PlannedAugmentedSample],
+    train_ratio: float,
+    random_seed: int,
+) -> tuple[list[PlannedAugmentedSample], list[PlannedAugmentedSample]]:
+    if len(planned_samples) <= 1:
+        return list(planned_samples), []
+
+    shuffled_samples = list(planned_samples)
+    random_generator = random.Random(random_seed)
+    random_generator.shuffle(shuffled_samples)
+
+    split_index = int(len(shuffled_samples) * train_ratio)
+    split_index = max(1, split_index)
+    split_index = min(len(shuffled_samples) - 1, split_index)
+
+    train_samples = sorted(shuffled_samples[:split_index], key=planned_sample_sort_key)
+    val_samples = sorted(shuffled_samples[split_index:], key=planned_sample_sort_key)
+    return train_samples, val_samples
+
+
+def planned_sample_sort_key(planned_sample: PlannedAugmentedSample) -> tuple[str, str, int]:
+    return (
+        planned_sample.annotation.image_path.name,
+        planned_sample.background_path.name,
+        planned_sample.annotation.class_id,
+    )
+
+
+def write_augmented_samples(
+    planned_samples: list[PlannedAugmentedSample],
+    output_image_dir: Path,
+    output_label_dir: Path,
+) -> list[dict]:
+    generated_samples: list[dict] = []
+    for planned_sample in planned_samples:
+        image_path, label_path = create_augmented_sample(
+            annotation=planned_sample.annotation,
+            background_path=planned_sample.background_path,
+            output_image_dir=output_image_dir,
+            output_label_dir=output_label_dir,
+        )
+        generated_samples.append(
+            {
+                "background": str(planned_sample.background_path),
+                "source_image": str(planned_sample.annotation.image_path),
+                "output_image": str(image_path),
+                "output_label": str(label_path),
+                "class_name": planned_sample.annotation.class_name,
+            }
+        )
+    return generated_samples
 
 
 def collect_source_annotations(
