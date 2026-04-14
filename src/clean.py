@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from src.common import remove_path, resolve_path
 from src.config import AppConfig
+from src.tracking import delete_tracking_project
 
 
 def clean_artifacts(config: AppConfig) -> None:
@@ -21,6 +22,7 @@ def prune_artifacts(config: AppConfig) -> None:
         remove_path(dataset_dir / "predictions_manifest.json")
 
     remove_local_model_file(config)
+    delete_tracking_project(config.tracking.project_name)
     print(f"Pruned post-training artifacts under {config.paths.dataset_dir}")
 
 

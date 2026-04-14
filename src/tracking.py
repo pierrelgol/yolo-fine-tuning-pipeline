@@ -6,6 +6,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+from src.common import remove_path
 from src.config import AppConfig
 
 
@@ -192,6 +193,32 @@ def finish_tracking_run(session: TrackingSession | None) -> None:
         trackio.context_vars.current_run.set(None)
     except Exception as error:
         print(f"Trackio finish failed: {error}")
+
+
+def delete_tracking_project(project_name: str) -> bool:
+    try:
+        import trackio
+        from trackio import utils
+    except Exception as error:
+        print(f"Trackio project cleanup unavailable: {error}")
+        return False
+
+    deleted_project = False
+    try:
+        deleted_project = bool(trackio.delete_project(project_name, force=True))
+    except Exception as error:
+        print(f"Trackio project deletion failed: {error}")
+
+    media_path = utils.MEDIA_DIR / project_name
+    if media_path.exists():
+        try:
+            remove_path(media_path)
+            deleted_project = True
+            print(f"Removed Trackio media under {media_path}")
+        except Exception as error:
+            print(f"Trackio media cleanup failed: {error}")
+
+    return deleted_project
 
 
 def parse_csv_value(raw_value: str | None) -> Any:
