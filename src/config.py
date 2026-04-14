@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import tomllib
 from dataclasses import dataclass
 from pathlib import Path
-import tomllib
 
 from src.common import resolve_path as resolve_common_path
 
@@ -139,8 +139,12 @@ def load_config(config_path: Path | None = None) -> AppConfig:
     tracking_payload = payload.get("tracking", {})
     hyperparameters_payload = train_payload.get("hyperparameters", {})
 
-    image_dir = resolve_path(project_root, str(paths_payload.get("image_dir", "image")))
-    dataset_dir = resolve_path(project_root, str(paths_payload.get("dataset_dir", "dataset")))
+    image_dir = resolve_path(
+        project_root, str(paths_payload.get("image_dir", "image"))
+    )
+    dataset_dir = resolve_path(
+        project_root, str(paths_payload.get("dataset_dir", "dataset"))
+    )
     train_dir = dataset_dir / "train"
     eval_dir = dataset_dir / "eval"
     infer_dir = dataset_dir / "infer"
@@ -186,32 +190,80 @@ def load_config(config_path: Path | None = None) -> AppConfig:
             hyperparameters=TrainHyperparameterConfig(
                 patience=int(hyperparameters_payload.get("patience", 100)),
                 optimizer=str(hyperparameters_payload.get("optimizer", "auto")),
-                initial_learning_rate=float(hyperparameters_payload.get("initial_learning_rate", 0.01)),
-                final_learning_rate_factor=float(hyperparameters_payload.get("final_learning_rate_factor", 0.01)),
+                initial_learning_rate=float(
+                    hyperparameters_payload.get("initial_learning_rate", 0.01)
+                ),
+                final_learning_rate_factor=float(
+                    hyperparameters_payload.get(
+                        "final_learning_rate_factor", 0.01
+                    )
+                ),
                 momentum=float(hyperparameters_payload.get("momentum", 0.937)),
-                weight_decay=float(hyperparameters_payload.get("weight_decay", 0.0005)),
-                warmup_epochs=float(hyperparameters_payload.get("warmup_epochs", 3.0)),
-                box_loss_gain=float(hyperparameters_payload.get("box_loss_gain", 7.5)),
-                class_loss_gain=float(hyperparameters_payload.get("class_loss_gain", 0.5)),
-                dfl_loss_gain=float(hyperparameters_payload.get("dfl_loss_gain", 1.5)),
-                hue_augmentation=float(hyperparameters_payload.get("hue_augmentation", 0.015)),
-                saturation_augmentation=float(hyperparameters_payload.get("saturation_augmentation", 0.7)),
-                value_augmentation=float(hyperparameters_payload.get("value_augmentation", 0.4)),
-                rotation_degrees=float(hyperparameters_payload.get("rotation_degrees", 0.0)),
-                translation_fraction=float(hyperparameters_payload.get("translation_fraction", 0.1)),
-                scaling_gain=float(hyperparameters_payload.get("scaling_gain", 0.5)),
-                shear_degrees=float(hyperparameters_payload.get("shear_degrees", 0.0)),
-                perspective_fraction=float(hyperparameters_payload.get("perspective_fraction", 0.0)),
-                vertical_flip_probability=float(hyperparameters_payload.get("vertical_flip_probability", 0.0)),
-                horizontal_flip_probability=float(hyperparameters_payload.get("horizontal_flip_probability", 0.5)),
-                mosaic_probability=float(hyperparameters_payload.get("mosaic_probability", 1.0)),
-                mixup_probability=float(hyperparameters_payload.get("mixup_probability", 0.0)),
-                copy_paste_probability=float(hyperparameters_payload.get("copy_paste_probability", 0.0)),
+                weight_decay=float(
+                    hyperparameters_payload.get("weight_decay", 0.0005)
+                ),
+                warmup_epochs=float(
+                    hyperparameters_payload.get("warmup_epochs", 3.0)
+                ),
+                box_loss_gain=float(
+                    hyperparameters_payload.get("box_loss_gain", 7.5)
+                ),
+                class_loss_gain=float(
+                    hyperparameters_payload.get("class_loss_gain", 0.5)
+                ),
+                dfl_loss_gain=float(
+                    hyperparameters_payload.get("dfl_loss_gain", 1.5)
+                ),
+                hue_augmentation=float(
+                    hyperparameters_payload.get("hue_augmentation", 0.015)
+                ),
+                saturation_augmentation=float(
+                    hyperparameters_payload.get("saturation_augmentation", 0.7)
+                ),
+                value_augmentation=float(
+                    hyperparameters_payload.get("value_augmentation", 0.4)
+                ),
+                rotation_degrees=float(
+                    hyperparameters_payload.get("rotation_degrees", 0.0)
+                ),
+                translation_fraction=float(
+                    hyperparameters_payload.get("translation_fraction", 0.1)
+                ),
+                scaling_gain=float(
+                    hyperparameters_payload.get("scaling_gain", 0.5)
+                ),
+                shear_degrees=float(
+                    hyperparameters_payload.get("shear_degrees", 0.0)
+                ),
+                perspective_fraction=float(
+                    hyperparameters_payload.get("perspective_fraction", 0.0)
+                ),
+                vertical_flip_probability=float(
+                    hyperparameters_payload.get(
+                        "vertical_flip_probability", 0.0
+                    )
+                ),
+                horizontal_flip_probability=float(
+                    hyperparameters_payload.get(
+                        "horizontal_flip_probability", 0.5
+                    )
+                ),
+                mosaic_probability=float(
+                    hyperparameters_payload.get("mosaic_probability", 1.0)
+                ),
+                mixup_probability=float(
+                    hyperparameters_payload.get("mixup_probability", 0.0)
+                ),
+                copy_paste_probability=float(
+                    hyperparameters_payload.get("copy_paste_probability", 0.0)
+                ),
                 workers=int(hyperparameters_payload.get("workers", 0)),
             ),
         ),
         evaluate=EvalConfig(
-            dataset_yaml=str(eval_payload.get("dataset_yaml", "dataset/train/dataset.yaml")),
+            dataset_yaml=str(
+                eval_payload.get("dataset_yaml", "dataset/train/dataset.yaml")
+            ),
         ),
         infer=InferConfig(
             dataset_name=str(infer_payload.get("dataset_name", "augmented")),
@@ -224,12 +276,20 @@ def load_config(config_path: Path | None = None) -> AppConfig:
         ),
         tracking=TrackingConfig(
             enabled=bool(tracking_payload.get("enabled", True)),
-            project_name=str(tracking_payload.get("project_name", "yolo-fine-tuning")),
+            project_name=str(
+                tracking_payload.get("project_name", "yolo-fine-tuning")
+            ),
             auto_log_gpu=bool(tracking_payload.get("auto_log_gpu", True)),
-            gpu_log_interval_seconds=float(tracking_payload.get("gpu_log_interval_seconds", 10.0)),
-            log_every_n_steps=max(1, int(tracking_payload.get("log_every_n_steps", 1))),
+            gpu_log_interval_seconds=float(
+                tracking_payload.get("gpu_log_interval_seconds", 10.0)
+            ),
+            log_every_n_steps=max(
+                1, int(tracking_payload.get("log_every_n_steps", 1))
+            ),
             max_logged_images=int(tracking_payload.get("max_logged_images", 6)),
-            max_logged_table_rows=int(tracking_payload.get("max_logged_table_rows", 200)),
+            max_logged_table_rows=int(
+                tracking_payload.get("max_logged_table_rows", 200)
+            ),
         ),
         config_path=resolved_config_path,
     )

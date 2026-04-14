@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
-from pathlib import Path
 import sys
+from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -67,11 +67,17 @@ def train_model(
 ) -> Path:
     selected_model_name = model_name or config.train.model_name
     selected_epochs = config.train.epochs if epochs is None else epochs
-    selected_image_size = config.train.image_size if image_size is None else image_size
-    selected_batch_size = config.train.batch_size if batch_size is None else batch_size
+    selected_image_size = (
+        config.train.image_size if image_size is None else image_size
+    )
+    selected_batch_size = (
+        config.train.batch_size if batch_size is None else batch_size
+    )
     requested_device = device or config.train.device
     selected_device = resolve_training_device(requested_device)
-    selected_workers = resolve_training_workers(config.train.hyperparameters.workers)
+    selected_workers = resolve_training_workers(
+        config.train.hyperparameters.workers
+    )
 
     selected_dataset_yaml_path = (
         resolve_path(dataset_yaml_path, base_dir=config.paths.project_root)
@@ -79,15 +85,23 @@ def train_model(
         else build_training_dataset(config)
     )
     if not selected_dataset_yaml_path.exists():
-        raise FileNotFoundError(f"Training dataset config not found: {selected_dataset_yaml_path}")
+        raise FileNotFoundError(
+            f"Training dataset config not found: {selected_dataset_yaml_path}"
+        )
 
-    run_name = next_run_name(config.paths.run_versions_path, selected_model_name)
+    run_name = next_run_name(
+        config.paths.run_versions_path, selected_model_name
+    )
     run_dir = config.paths.train_runs_dir / run_name
     if run_dir.exists() and not force:
         raise FileExistsError(f"Training run already exists: {run_dir}")
 
     print(training_device_summary(requested_device, selected_device))
-    print(training_worker_summary(config.train.hyperparameters.workers, selected_workers))
+    print(
+        training_worker_summary(
+            config.train.hyperparameters.workers, selected_workers
+        )
+    )
     print(f"Training run: {run_name}")
 
     tracking_session = start_tracking_run(
@@ -99,7 +113,9 @@ def train_model(
             "task": "train",
             "run_name": run_name,
             "model_name": selected_model_name,
-            "dataset_yaml_path": portable_path(selected_dataset_yaml_path, base_dir=config.paths.project_root),
+            "dataset_yaml_path": portable_path(
+                selected_dataset_yaml_path, base_dir=config.paths.project_root
+            ),
             "epochs": selected_epochs,
             "image_size": selected_image_size,
             "batch_size": selected_batch_size,
@@ -112,7 +128,9 @@ def train_model(
 
     try:
         model = YOLO(selected_model_name)
-        register_training_callbacks(model, tracking_session, config.tracking.log_every_n_steps)
+        register_training_callbacks(
+            model, tracking_session, config.tracking.log_every_n_steps
+        )
 
         training_results = model.train(
             data=str(selected_dataset_yaml_path),
@@ -158,10 +176,21 @@ def train_model(
             {
                 "run_name": run_name,
                 "model_name": selected_model_name,
-                "run_dir": portable_path(run_dir, base_dir=config.paths.project_root),
-                "dataset_yaml_path": portable_path(selected_dataset_yaml_path, base_dir=config.paths.project_root),
-                "best_weights_path": portable_path(config.paths.train_best_weights_path, base_dir=config.paths.project_root),
-                "latest_weights_path": portable_path(config.paths.train_latest_weights_path, base_dir=config.paths.project_root),
+                "run_dir": portable_path(
+                    run_dir, base_dir=config.paths.project_root
+                ),
+                "dataset_yaml_path": portable_path(
+                    selected_dataset_yaml_path,
+                    base_dir=config.paths.project_root,
+                ),
+                "best_weights_path": portable_path(
+                    config.paths.train_best_weights_path,
+                    base_dir=config.paths.project_root,
+                ),
+                "latest_weights_path": portable_path(
+                    config.paths.train_latest_weights_path,
+                    base_dir=config.paths.project_root,
+                ),
             },
         )
         log_training_summary(config, tracking_session, run_dir, metrics)
@@ -178,7 +207,9 @@ def train_model(
 
 
 def build_training_dataset(config: AppConfig) -> Path:
-    class_map = load_class_map(dataset_classes_path(config.paths.annotation_dir))
+    class_map = load_class_map(
+        dataset_classes_path(config.paths.annotation_dir)
+    )
     class_names = ordered_class_names(class_map)
     if not class_names:
         raise FileNotFoundError(
@@ -186,24 +217,42 @@ def build_training_dataset(config: AppConfig) -> Path:
         )
 
     valid_class_ids = set(class_map.values())
-    annotation_samples = collect_samples(config.paths.annotation_dir, TRAIN_SPLIT)
-    augmented_train_samples = collect_samples(config.paths.augmented_dir, TRAIN_SPLIT)
-    augmented_val_samples = collect_samples(config.paths.augmented_dir, VAL_SPLIT)
+    annotation_samples = collect_samples(
+        config.paths.annotation_dir, TRAIN_SPLIT
+    )
+    augmented_train_samples = collect_samples(
+        config.paths.augmented_dir, TRAIN_SPLIT
+    )
+    augmented_val_samples = collect_samples(
+        config.paths.augmented_dir, VAL_SPLIT
+    )
 
     if augmented_train_samples or augmented_val_samples:
         train_samples = annotation_samples + augmented_train_samples
         val_samples = augmented_val_samples
         if not val_samples:
-            train_samples, val_samples = split_items(train_samples, config.setup.train_split, config.setup.random_seed)
+            train_samples, val_samples = split_items(
+                train_samples,
+                config.setup.train_split,
+                config.setup.random_seed,
+            )
     else:
-        train_samples, val_samples = split_items(annotation_samples, config.setup.train_split, config.setup.random_seed)
+        train_samples, val_samples = split_items(
+            annotation_samples,
+            config.setup.train_split,
+            config.setup.random_seed,
+        )
         if not val_samples and train_samples:
             val_samples = list(train_samples)
 
     if not train_samples:
-        raise FileNotFoundError("No training images found. Run annotate or augment before train.")
+        raise FileNotFoundError(
+            "No training images found. Run annotate or augment before train."
+        )
     if count_positive_samples(train_samples + val_samples) == 0:
-        raise ValueError("No labeled annotations found for training. Add at least one bounding box before train.")
+        raise ValueError(
+            "No labeled annotations found for training. Add at least one bounding box before train."
+        )
 
     clear_training_dataset(config)
     train_image_dir = dataset_images_dir(config.paths.train_dir, TRAIN_SPLIT)
@@ -211,7 +260,9 @@ def build_training_dataset(config: AppConfig) -> Path:
     val_image_dir = dataset_images_dir(config.paths.train_dir, VAL_SPLIT)
     val_label_dir = dataset_labels_dir(config.paths.train_dir, VAL_SPLIT)
 
-    train_samples = sorted(train_samples, key=lambda sample: sample.image_path.name)
+    train_samples = sorted(
+        train_samples, key=lambda sample: sample.image_path.name
+    )
     val_samples = sorted(val_samples, key=lambda sample: sample.image_path.name)
     copy_split(train_samples, train_image_dir, train_label_dir, valid_class_ids)
     copy_split(val_samples, val_image_dir, val_label_dir, valid_class_ids)
@@ -221,11 +272,21 @@ def build_training_dataset(config: AppConfig) -> Path:
     write_json(
         dataset_manifest_path(config.paths.train_dir),
         {
-            "dataset_dir": portable_path(config.paths.train_dir, base_dir=config.paths.project_root),
-            "train_image_dir": portable_path(train_image_dir, base_dir=config.paths.project_root),
-            "train_label_dir": portable_path(train_label_dir, base_dir=config.paths.project_root),
-            "val_image_dir": portable_path(val_image_dir, base_dir=config.paths.project_root),
-            "val_label_dir": portable_path(val_label_dir, base_dir=config.paths.project_root),
+            "dataset_dir": portable_path(
+                config.paths.train_dir, base_dir=config.paths.project_root
+            ),
+            "train_image_dir": portable_path(
+                train_image_dir, base_dir=config.paths.project_root
+            ),
+            "train_label_dir": portable_path(
+                train_label_dir, base_dir=config.paths.project_root
+            ),
+            "val_image_dir": portable_path(
+                val_image_dir, base_dir=config.paths.project_root
+            ),
+            "val_label_dir": portable_path(
+                val_label_dir, base_dir=config.paths.project_root
+            ),
             "classes": class_names,
             "num_train_images": len(train_samples),
             "num_val_images": len(val_samples),
@@ -286,7 +347,9 @@ def copy_split(
 ) -> None:
     for sample in samples:
         destination_image_path = destination_image_dir / sample.image_path.name
-        destination_label_path = destination_label_dir / f"{sample.image_path.stem}.txt"
+        destination_label_path = (
+            destination_label_dir / f"{sample.image_path.stem}.txt"
+        )
         copy_file(sample.image_path, destination_image_path)
 
         label_lines: list[str] = []
@@ -297,7 +360,9 @@ def copy_split(
         save_yolo_labels(destination_label_path, label_lines)
 
 
-def register_training_callbacks(model: YOLO, tracking_session, log_every_n_steps: int) -> None:
+def register_training_callbacks(
+    model: YOLO, tracking_session, log_every_n_steps: int
+) -> None:
     callback_state = {"global_step": 0}
 
     def on_train_batch_end(trainer) -> None:
@@ -308,7 +373,9 @@ def register_training_callbacks(model: YOLO, tracking_session, log_every_n_steps
 
         batch_metrics = trainer.label_loss_items(trainer.tloss)
         batch_metrics["train/epoch"] = trainer.epoch + 1
-        batch_metrics["optimizer/lr"] = float(trainer.optimizer.param_groups[0]["lr"])
+        batch_metrics["optimizer/lr"] = float(
+            trainer.optimizer.param_groups[0]["lr"]
+        )
         log_tracking_metrics(tracking_session, batch_metrics, step=global_step)
 
     def on_fit_epoch_end(trainer) -> None:
@@ -318,27 +385,47 @@ def register_training_callbacks(model: YOLO, tracking_session, log_every_n_steps
         learning_rates = getattr(trainer, "lr", {}) or {}
         if "lr/pg0" in learning_rates:
             epoch_metrics["optimizer/lr_group0"] = learning_rates["lr/pg0"]
-        log_tracking_metrics(tracking_session, epoch_metrics, step=callback_state["global_step"])
+        log_tracking_metrics(
+            tracking_session, epoch_metrics, step=callback_state["global_step"]
+        )
 
     model.add_callback("on_train_batch_end", on_train_batch_end)
     model.add_callback("on_fit_epoch_end", on_fit_epoch_end)
 
 
-def write_training_outputs(config: AppConfig, run_dir: Path, metrics: dict[str, Any]) -> None:
+def write_training_outputs(
+    config: AppConfig, run_dir: Path, metrics: dict[str, Any]
+) -> None:
     metrics_json = json.dumps(metrics, indent=2, sort_keys=True)
     config.paths.train_metrics_path.write_text(metrics_json, encoding="utf-8")
     (run_dir / "metrics.json").write_text(metrics_json, encoding="utf-8")
-    copy_output_file(run_dir / "results.csv", config.paths.train_results_csv_path)
-    copy_output_file(run_dir / "weights" / "best.pt", config.paths.train_best_weights_path)
-    copy_output_file(run_dir / "weights" / "last.pt", config.paths.train_latest_weights_path)
+    copy_output_file(
+        run_dir / "results.csv", config.paths.train_results_csv_path
+    )
+    copy_output_file(
+        run_dir / "weights" / "best.pt", config.paths.train_best_weights_path
+    )
+    copy_output_file(
+        run_dir / "weights" / "last.pt", config.paths.train_latest_weights_path
+    )
 
 
-def log_training_summary(config: AppConfig, tracking_session, run_dir: Path, metrics: dict[str, Any]) -> None:
+def log_training_summary(
+    config: AppConfig, tracking_session, run_dir: Path, metrics: dict[str, Any]
+) -> None:
     log_tracking_metrics(
         tracking_session,
         {
-            "dataset/train_images": len(discover_images(dataset_images_dir(config.paths.train_dir, TRAIN_SPLIT))),
-            "dataset/val_images": len(discover_images(dataset_images_dir(config.paths.train_dir, VAL_SPLIT))),
+            "dataset/train_images": len(
+                discover_images(
+                    dataset_images_dir(config.paths.train_dir, TRAIN_SPLIT)
+                )
+            ),
+            "dataset/val_images": len(
+                discover_images(
+                    dataset_images_dir(config.paths.train_dir, VAL_SPLIT)
+                )
+            ),
         },
     )
     log_tracking_key_value_table(
@@ -361,7 +448,12 @@ def log_training_summary(config: AppConfig, tracking_session, run_dir: Path, met
         config.paths.train_results_csv_path,
         max_rows=config.tracking.max_logged_table_rows,
     )
-    log_tracking_images(tracking_session, build_training_image_mapping(run_dir, config.tracking.max_logged_images))
+    log_tracking_images(
+        tracking_session,
+        build_training_image_mapping(
+            run_dir, config.tracking.max_logged_images
+        ),
+    )
     save_tracking_artifacts(
         tracking_session,
         [
@@ -378,13 +470,31 @@ def log_training_summary(config: AppConfig, tracking_session, run_dir: Path, met
     )
 
 
-def build_training_image_mapping(run_dir: Path, max_logged_images: int) -> dict[str, tuple[Path, str | None]]:
+def build_training_image_mapping(
+    run_dir: Path, max_logged_images: int
+) -> dict[str, tuple[Path, str | None]]:
     candidate_images = [
         ("images/training_curves", run_dir / "results.png", "Training curves."),
-        ("images/confusion_matrix", run_dir / "confusion_matrix.png", "Validation confusion matrix."),
-        ("images/precision_recall_curve", run_dir / "PR_curve.png", "Precision recall curve."),
-        ("images/train_batch_preview", run_dir / "train_batch0.jpg", "Training batch preview."),
-        ("images/val_prediction_preview", run_dir / "val_batch0_pred.jpg", "Validation prediction preview."),
+        (
+            "images/confusion_matrix",
+            run_dir / "confusion_matrix.png",
+            "Validation confusion matrix.",
+        ),
+        (
+            "images/precision_recall_curve",
+            run_dir / "PR_curve.png",
+            "Precision recall curve.",
+        ),
+        (
+            "images/train_batch_preview",
+            run_dir / "train_batch0.jpg",
+            "Training batch preview.",
+        ),
+        (
+            "images/val_prediction_preview",
+            run_dir / "val_batch0_pred.jpg",
+            "Validation prediction preview.",
+        ),
     ]
 
     image_mapping: dict[str, tuple[Path, str | None]] = {}
@@ -436,7 +546,9 @@ def training_device_summary(requested_device: str, selected_device: str) -> str:
     return f"Training device: cuda:{device_index} ({torch.cuda.get_device_name(device_index)})"
 
 
-def training_worker_summary(configured_workers: int, selected_workers: int) -> str:
+def training_worker_summary(
+    configured_workers: int, selected_workers: int
+) -> str:
     if configured_workers == selected_workers:
         return f"Training data loader workers: {selected_workers}"
     return (
@@ -447,5 +559,7 @@ def training_worker_summary(configured_workers: int, selected_workers: int) -> s
 
 def copy_output_file(source_path: Path, destination_path: Path) -> None:
     if not non_empty_file(source_path):
-        raise FileNotFoundError(f"Expected training output not found: {source_path}")
+        raise FileNotFoundError(
+            f"Expected training output not found: {source_path}"
+        )
     copy_file(source_path, destination_path)

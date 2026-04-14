@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
-from pathlib import Path
 import shutil
 import zipfile
+from pathlib import Path
 
 from src.common import (
     dataset_images_dir,
@@ -20,7 +20,9 @@ from src.common import (
 from src.config import AppConfig
 
 
-def prepare_dataset(config: AppConfig, archive_path: Path | None = None, force: bool = False) -> dict:
+def prepare_dataset(
+    config: AppConfig, archive_path: Path | None = None, force: bool = False
+) -> dict:
     source_archive_path = (
         resolve_path(archive_path, base_dir=config.paths.project_root)
         if archive_path is not None
@@ -54,7 +56,11 @@ def unpack_archive(archive_path: Path, dataset_dir: Path) -> None:
         archive_file.extractall(temporary_dir)
 
     extracted_children = list(temporary_dir.iterdir())
-    extracted_root = extracted_children[0] if len(extracted_children) == 1 and extracted_children[0].is_dir() else temporary_dir
+    extracted_root = (
+        extracted_children[0]
+        if len(extracted_children) == 1 and extracted_children[0].is_dir()
+        else temporary_dir
+    )
 
     if dataset_dir.exists():
         shutil.rmtree(dataset_dir)
@@ -70,9 +76,13 @@ def build_manifest(dataset_dir: Path, project_root: Path) -> dict:
     prediction_dir = dataset_predictions_dir(dataset_dir)
 
     if not image_dir.exists():
-        raise FileNotFoundError(f"Expected image directory not found: {image_dir}")
+        raise FileNotFoundError(
+            f"Expected image directory not found: {image_dir}"
+        )
     if not label_dir.exists():
-        raise FileNotFoundError(f"Expected label directory not found: {label_dir}")
+        raise FileNotFoundError(
+            f"Expected label directory not found: {label_dir}"
+        )
 
     ensure_dir(prediction_dir)
 
@@ -85,5 +95,7 @@ def build_manifest(dataset_dir: Path, project_root: Path) -> dict:
         "label_dir": portable_path(label_dir, base_dir=project_root),
         "prediction_dir": portable_path(prediction_dir, base_dir=project_root),
         "num_images": len(discover_images(image_dir)),
-        "dataset_yaml": portable_path(dataset_yaml_path(dataset_dir), base_dir=project_root),
+        "dataset_yaml": portable_path(
+            dataset_yaml_path(dataset_dir), base_dir=project_root
+        ),
     }

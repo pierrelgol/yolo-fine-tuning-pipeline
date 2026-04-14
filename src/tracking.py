@@ -51,14 +51,24 @@ def start_tracking_run(
         print(f"Trackio initialization failed: {error}")
         return None
 
-    return TrackingSession(project_name=config.tracking.project_name, run_name=run_name)
+    return TrackingSession(
+        project_name=config.tracking.project_name, run_name=run_name
+    )
 
 
-def log_tracking_metrics(session: TrackingSession | None, metrics: dict[str, Any], step: int | None = None) -> None:
+def log_tracking_metrics(
+    session: TrackingSession | None,
+    metrics: dict[str, Any],
+    step: int | None = None,
+) -> None:
     if session is None:
         return
 
-    payload = {key: normalize_tracking_value(value) for key, value in metrics.items() if value is not None}
+    payload = {
+        key: normalize_tracking_value(value)
+        for key, value in metrics.items()
+        if value is not None
+    }
     if not payload:
         return
 
@@ -112,7 +122,9 @@ def log_tracking_table(
         import pandas
         import trackio
 
-        normalized_rows = [[normalize_tracking_value(value) for value in row] for row in rows]
+        normalized_rows = [
+            [normalize_tracking_value(value) for value in row] for row in rows
+        ]
         dataframe = pandas.DataFrame(normalized_rows, columns=columns)
         trackio.log({table_name: trackio.Table(dataframe=dataframe)}, step=step)
     except Exception as error:
@@ -125,7 +137,11 @@ def log_tracking_key_value_table(
     values: dict[str, Any],
     step: int | None = None,
 ) -> None:
-    rows = [[key, normalize_tracking_value(value)] for key, value in values.items() if value is not None]
+    rows = [
+        [key, normalize_tracking_value(value)]
+        for key, value in values.items()
+        if value is not None
+    ]
     log_tracking_table(session, table_name, ["name", "value"], rows, step=step)
 
 
@@ -148,12 +164,19 @@ def log_tracking_table_from_csv(
         for row_index, row in enumerate(reader):
             if row_index >= max_rows:
                 break
-            rows.append([parse_csv_value(row.get(field_name)) for field_name in reader.fieldnames])
+            rows.append([
+                parse_csv_value(row.get(field_name))
+                for field_name in reader.fieldnames
+            ])
 
-    log_tracking_table(session, table_name, list(reader.fieldnames), rows, step=step)
+    log_tracking_table(
+        session, table_name, list(reader.fieldnames), rows, step=step
+    )
 
 
-def save_tracking_artifacts(session: TrackingSession | None, artifact_paths: list[Path]) -> None:
+def save_tracking_artifacts(
+    session: TrackingSession | None, artifact_paths: list[Path]
+) -> None:
     if session is None:
         return
 
@@ -170,7 +193,9 @@ def save_tracking_artifacts(session: TrackingSession | None, artifact_paths: lis
         print(f"Trackio artifact save failed: {error}")
 
 
-def alert_tracking_failure(session: TrackingSession | None, title: str, message: str) -> None:
+def alert_tracking_failure(
+    session: TrackingSession | None, title: str, message: str
+) -> None:
     if session is None:
         return
 
@@ -251,7 +276,10 @@ def normalize_tracking_value(value: Any) -> Any:
             return str(value)
 
     if isinstance(value, dict):
-        return {str(key): normalize_tracking_value(item) for key, item in value.items()}
+        return {
+            str(key): normalize_tracking_value(item)
+            for key, item in value.items()
+        }
 
     if isinstance(value, (list, tuple)):
         return [normalize_tracking_value(item) for item in value]

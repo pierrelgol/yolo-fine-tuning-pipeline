@@ -17,7 +17,11 @@ def prune_artifacts(config: AppConfig) -> None:
     remove_path(config.paths.infer_dir)
     remove_path(config.paths.run_versions_path)
 
-    for dataset_dir in [config.paths.coco128_dir, config.paths.annotation_dir, config.paths.augmented_dir]:
+    for dataset_dir in [
+        config.paths.coco128_dir,
+        config.paths.annotation_dir,
+        config.paths.augmented_dir,
+    ]:
         remove_path(dataset_dir / "predictions")
         remove_path(dataset_dir / "predictions_manifest.json")
 
@@ -27,5 +31,7 @@ def prune_artifacts(config: AppConfig) -> None:
 
 
 def remove_local_model_file(config: AppConfig) -> None:
-    model_path = resolve_path(config.train.model_name, base_dir=config.paths.project_root)
+    model_path = resolve_path(
+        config.train.model_name, base_dir=config.paths.project_root
+    )
     remove_path(model_path)

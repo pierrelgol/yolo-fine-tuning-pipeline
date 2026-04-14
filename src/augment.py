@@ -1,7 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
 import json
+from dataclasses import dataclass
 from pathlib import Path
 
 from PIL import Image
@@ -54,59 +54,114 @@ def augment_with_annotations(
     output_dir: Path | None = None,
 ) -> dict:
     source_dataset_dir = config.paths.annotation_dir
-    resolved_background_dir = resolve_path(background_dir, base_dir=config.paths.project_root)
-    source_image_dir = resolve_path(image_dir or dataset_images_dir(source_dataset_dir), base_dir=config.paths.project_root)
-    source_label_dir = resolve_path(label_dir or dataset_labels_dir(source_dataset_dir), base_dir=config.paths.project_root)
-    source_classes_path = resolve_path(classes_path or dataset_classes_path(source_dataset_dir), base_dir=config.paths.project_root)
-    augmented_dataset_dir = resolve_path(output_dir or config.paths.augmented_dir, base_dir=config.paths.project_root)
+    resolved_background_dir = resolve_path(
+        background_dir, base_dir=config.paths.project_root
+    )
+    source_image_dir = resolve_path(
+        image_dir or dataset_images_dir(source_dataset_dir),
+        base_dir=config.paths.project_root,
+    )
+    source_label_dir = resolve_path(
+        label_dir or dataset_labels_dir(source_dataset_dir),
+        base_dir=config.paths.project_root,
+    )
+    source_classes_path = resolve_path(
+        classes_path or dataset_classes_path(source_dataset_dir),
+        base_dir=config.paths.project_root,
+    )
+    augmented_dataset_dir = resolve_path(
+        output_dir or config.paths.augmented_dir,
+        base_dir=config.paths.project_root,
+    )
 
     class_map = load_class_map(source_classes_path)
     if not class_map:
-        raise FileNotFoundError(f"No classes found in {source_classes_path}. Run annotate before augment.")
+        raise FileNotFoundError(
+            f"No classes found in {source_classes_path}. Run annotate before augment."
+        )
 
-    annotations = collect_source_annotations(source_image_dir, source_label_dir, class_map)
+    annotations = collect_source_annotations(
+        source_image_dir, source_label_dir, class_map
+    )
     if not annotations:
-        raise FileNotFoundError(f"No annotations found in {source_label_dir}. Run annotate before augment.")
+        raise FileNotFoundError(
+            f"No annotations found in {source_label_dir}. Run annotate before augment."
+        )
 
     background_paths = discover_images(resolved_background_dir)
     if not background_paths:
-        raise FileNotFoundError(f"No background images found in {resolved_background_dir}")
+        raise FileNotFoundError(
+            f"No background images found in {resolved_background_dir}"
+        )
 
     clear_dir(augmented_dataset_dir)
     train_image_dir = dataset_images_dir(augmented_dataset_dir, "train2017")
     train_label_dir = dataset_labels_dir(augmented_dataset_dir, "train2017")
     val_image_dir = dataset_images_dir(augmented_dataset_dir, "val2017")
     val_label_dir = dataset_labels_dir(augmented_dataset_dir, "val2017")
-    dataset_predictions_dir(augmented_dataset_dir, "train2017").mkdir(parents=True, exist_ok=True)
-    dataset_predictions_dir(augmented_dataset_dir, "val2017").mkdir(parents=True, exist_ok=True)
+    dataset_predictions_dir(augmented_dataset_dir, "train2017").mkdir(
+        parents=True, exist_ok=True
+    )
+    dataset_predictions_dir(augmented_dataset_dir, "val2017").mkdir(
+        parents=True, exist_ok=True
+    )
 
-    planned_samples = [PlannedSample(annotation=annotation, background_path=background_path) for annotation in annotations for background_path in background_paths]
-    train_samples, val_samples = split_items(planned_samples, config.setup.train_split, config.setup.random_seed)
+    planned_samples = [
+        PlannedSample(annotation=annotation, background_path=background_path)
+        for annotation in annotations
+        for background_path in background_paths
+    ]
+    train_samples, val_samples = split_items(
+        planned_samples, config.setup.train_split, config.setup.random_seed
+    )
     train_samples = sorted(train_samples, key=planned_sample_sort_key)
     val_samples = sorted(val_samples, key=planned_sample_sort_key)
 
-    generated_train_samples = write_samples(train_samples, train_image_dir, train_label_dir, config.paths.project_root)
-    generated_val_samples = write_samples(val_samples, val_image_dir, val_label_dir, config.paths.project_root)
+    generated_train_samples = write_samples(
+        train_samples,
+        train_image_dir,
+        train_label_dir,
+        config.paths.project_root,
+    )
+    generated_val_samples = write_samples(
+        val_samples, val_image_dir, val_label_dir, config.paths.project_root
+    )
 
     save_class_map(dataset_classes_path(augmented_dataset_dir), class_map)
     write_dataset_yaml(augmented_dataset_dir, ordered_class_names(class_map))
 
     manifest = {
-        "dataset_dir": portable_path(augmented_dataset_dir, base_dir=config.paths.project_root),
-        "background_dir": portable_path(resolved_background_dir, base_dir=config.paths.project_root),
-        "classes_path": portable_path(dataset_classes_path(augmented_dataset_dir), base_dir=config.paths.project_root),
+        "dataset_dir": portable_path(
+            augmented_dataset_dir, base_dir=config.paths.project_root
+        ),
+        "background_dir": portable_path(
+            resolved_background_dir, base_dir=config.paths.project_root
+        ),
+        "classes_path": portable_path(
+            dataset_classes_path(augmented_dataset_dir),
+            base_dir=config.paths.project_root,
+        ),
         "num_train_samples": len(generated_train_samples),
         "num_val_samples": len(generated_val_samples),
-        "num_generated_samples": len(generated_train_samples) + len(generated_val_samples),
+        "num_generated_samples": len(generated_train_samples)
+        + len(generated_val_samples),
         "generated_samples": generated_train_samples + generated_val_samples,
     }
-    dataset_manifest_path(augmented_dataset_dir).write_text(json.dumps(manifest, indent=2), encoding="utf-8")
-    print(f"Wrote {manifest['num_generated_samples']} augmented samples to {augmented_dataset_dir}")
+    dataset_manifest_path(augmented_dataset_dir).write_text(
+        json.dumps(manifest, indent=2), encoding="utf-8"
+    )
+    print(
+        f"Wrote {manifest['num_generated_samples']} augmented samples to {augmented_dataset_dir}"
+    )
     return manifest
 
 
-def collect_source_annotations(image_dir: Path, label_dir: Path, class_map: dict[str, int]) -> list[SourceAnnotation]:
-    class_name_by_id = {class_id: class_name for class_name, class_id in class_map.items()}
+def collect_source_annotations(
+    image_dir: Path, label_dir: Path, class_map: dict[str, int]
+) -> list[SourceAnnotation]:
+    class_name_by_id = {
+        class_id: class_name for class_name, class_id in class_map.items()
+    }
     annotations: list[SourceAnnotation] = []
 
     for image_path in discover_images(image_dir):
@@ -116,7 +171,9 @@ def collect_source_annotations(image_dir: Path, label_dir: Path, class_map: dict
                 SourceAnnotation(
                     image_path=image_path,
                     class_id=class_id,
-                    class_name=class_name_by_id.get(class_id, f"class_{class_id}"),
+                    class_name=class_name_by_id.get(
+                        class_id, f"class_{class_id}"
+                    ),
                     bbox=bbox,
                 )
             )
@@ -124,7 +181,9 @@ def collect_source_annotations(image_dir: Path, label_dir: Path, class_map: dict
     return annotations
 
 
-def planned_sample_sort_key(planned_sample: PlannedSample) -> tuple[str, str, int]:
+def planned_sample_sort_key(
+    planned_sample: PlannedSample,
+) -> tuple[str, str, int]:
     return (
         planned_sample.annotation.image_path.name,
         planned_sample.background_path.name,
@@ -140,22 +199,30 @@ def write_samples(
 ) -> list[dict]:
     generated_samples: list[dict] = []
     progress_label = f"augment:{image_dir.parent.name}"
-    for planned_sample in tqdm(planned_samples, desc=progress_label, unit="sample"):
+    for planned_sample in tqdm(
+        planned_samples, desc=progress_label, unit="sample"
+    ):
         output_image_path, output_label_path = create_augmented_sample(
             annotation=planned_sample.annotation,
             background_path=planned_sample.background_path,
             output_image_dir=image_dir,
             output_label_dir=label_dir,
         )
-        generated_samples.append(
-            {
-                "background": portable_path(planned_sample.background_path, base_dir=project_root),
-                "source_image": portable_path(planned_sample.annotation.image_path, base_dir=project_root),
-                "output_image": portable_path(output_image_path, base_dir=project_root),
-                "output_label": portable_path(output_label_path, base_dir=project_root),
-                "class_name": planned_sample.annotation.class_name,
-            }
-        )
+        generated_samples.append({
+            "background": portable_path(
+                planned_sample.background_path, base_dir=project_root
+            ),
+            "source_image": portable_path(
+                planned_sample.annotation.image_path, base_dir=project_root
+            ),
+            "output_image": portable_path(
+                output_image_path, base_dir=project_root
+            ),
+            "output_label": portable_path(
+                output_label_path, base_dir=project_root
+            ),
+            "class_name": planned_sample.annotation.class_name,
+        })
     return generated_samples
 
 
@@ -170,7 +237,9 @@ def create_augmented_sample(
         background = opened_background.convert("RGBA")
 
     background_width, background_height = background.size
-    resized_width, resized_height = resize_foreground(foreground.size, background.size)
+    resized_width, resized_height = resize_foreground(
+        foreground.size, background.size
+    )
     resized_foreground = foreground.resize((resized_width, resized_height))
 
     x_offset = (background_width - resized_width) // 2
@@ -196,7 +265,9 @@ def create_augmented_sample(
         resized_width / background_width,
         resized_height / background_height,
     )
-    save_yolo_labels(output_label_path, [yolo_label_line(annotation.class_id, output_bbox)])
+    save_yolo_labels(
+        output_label_path, [yolo_label_line(annotation.class_id, output_bbox)]
+    )
     return output_image_path, output_label_path
 
 
@@ -213,7 +284,9 @@ def crop_foreground(annotation: SourceAnnotation) -> Image.Image:
     return source_image.crop((left, top, right, bottom))
 
 
-def resize_foreground(foreground_size: tuple[int, int], background_size: tuple[int, int]) -> tuple[int, int]:
+def resize_foreground(
+    foreground_size: tuple[int, int], background_size: tuple[int, int]
+) -> tuple[int, int]:
     foreground_width, foreground_height = foreground_size
     background_width, background_height = background_size
     max_width = max(1, background_width // 3)
@@ -221,7 +294,9 @@ def resize_foreground(foreground_size: tuple[int, int], background_size: tuple[i
     width_scale = max_width / max(1, foreground_width)
     height_scale = max_height / max(1, foreground_height)
     scale = min(width_scale, height_scale, 1.0)
-    return max(1, int(foreground_width * scale)), max(1, int(foreground_height * scale))
+    return max(1, int(foreground_width * scale)), max(
+        1, int(foreground_height * scale)
+    )
 
 
 def image_dir_path(image_dir: Path, sample_name: str) -> Path:

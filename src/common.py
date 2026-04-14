@@ -47,7 +47,9 @@ def read_json(path: Path) -> dict:
 
 def write_json(path: Path, payload: dict) -> None:
     ensure_dir(path.parent)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(
+        json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8"
+    )
 
 
 def discover_images(directory: Path) -> list[Path]:
@@ -101,7 +103,9 @@ def save_yolo_labels(path: Path, lines: Sequence[str]) -> None:
     path.write_text(payload, encoding="utf-8")
 
 
-def parse_yolo_labels(path: Path) -> list[tuple[int, tuple[float, float, float, float]]]:
+def parse_yolo_labels(
+    path: Path,
+) -> list[tuple[int, tuple[float, float, float, float]]]:
     if not path.exists():
         return []
 
@@ -133,7 +137,10 @@ def load_class_map(path: Path) -> dict[str, int]:
 
 def save_class_map(path: Path, mapping: dict[str, int]) -> None:
     ordered_items = sorted(mapping.items(), key=lambda item: item[1])
-    write_json(path, {"name_to_id": {name: class_id for name, class_id in ordered_items}})
+    write_json(
+        path,
+        {"name_to_id": {name: class_id for name, class_id in ordered_items}},
+    )
 
 
 def ordered_class_names(class_map: dict[str, int]) -> list[str]:
@@ -146,7 +153,9 @@ def image_size(path: Path) -> tuple[int, int]:
         return image.size
 
 
-def image_label_path(image_path: Path, image_root: Path, label_root: Path) -> Path:
+def image_label_path(
+    image_path: Path, image_root: Path, label_root: Path
+) -> Path:
     return label_root / image_path.relative_to(image_root).with_suffix(".txt")
 
 
@@ -158,7 +167,9 @@ def dataset_labels_dir(dataset_dir: Path, split: str = TRAIN_SPLIT) -> Path:
     return dataset_dir / "labels" / split
 
 
-def dataset_predictions_dir(dataset_dir: Path, split: str = TRAIN_SPLIT) -> Path:
+def dataset_predictions_dir(
+    dataset_dir: Path, split: str = TRAIN_SPLIT
+) -> Path:
     return dataset_dir / "predictions" / split
 
 
@@ -178,7 +189,9 @@ def resolve_path(path: Path | str, base_dir: Path | None = None) -> Path:
     raw_path = Path(os.path.expandvars(os.path.expanduser(str(path))))
     if raw_path.is_absolute():
         return raw_path.resolve()
-    anchor_dir = base_dir.resolve() if base_dir is not None else Path.cwd().resolve()
+    anchor_dir = (
+        base_dir.resolve() if base_dir is not None else Path.cwd().resolve()
+    )
     return (anchor_dir / raw_path).resolve()
 
 
@@ -230,7 +243,11 @@ def write_dataset_yaml(
     import yaml
 
     if val_split is None:
-        val_split = VAL_SPLIT if dataset_images_dir(dataset_dir, VAL_SPLIT).exists() else train_split
+        val_split = (
+            VAL_SPLIT
+            if dataset_images_dir(dataset_dir, VAL_SPLIT).exists()
+            else train_split
+        )
 
     payload = {
         "train": f"images/{train_split}",
@@ -250,7 +267,9 @@ def preferred_image_split(dataset_dir: Path) -> str:
     return ""
 
 
-def resolve_dataset_directory(project_root: Path, dataset_root: Path, dataset_path: Path) -> Path:
+def resolve_dataset_directory(
+    project_root: Path, dataset_root: Path, dataset_path: Path
+) -> Path:
     candidate_paths: list[Path] = []
     if dataset_path.is_absolute():
         candidate_paths.append(dataset_path.resolve())
@@ -264,12 +283,15 @@ def resolve_dataset_directory(project_root: Path, dataset_root: Path, dataset_pa
             return candidate_path
 
     raise FileNotFoundError(
-        "Dataset directory not found. Checked: " + ", ".join(str(path) for path in candidate_paths)
+        "Dataset directory not found. Checked: "
+        + ", ".join(str(path) for path in candidate_paths)
     )
 
 
 def sanitized_name(value: str) -> str:
-    normalized_value = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
+    normalized_value = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip(
+        "-"
+    )
     return normalized_value or "run"
 
 
@@ -284,7 +306,9 @@ def child_run_name(parent_run_name: str, task_name: str) -> str:
     return f"{parent_run_name}-{sanitized_name(task_name)}"
 
 
-def latest_train_run_name(train_runs_dir: Path, latest_run_path: Path, fallback_name: str) -> str:
+def latest_train_run_name(
+    train_runs_dir: Path, latest_run_path: Path, fallback_name: str
+) -> str:
     if latest_run_path.exists():
         run_name = read_json(latest_run_path).get("run_name")
         if isinstance(run_name, str) and run_name.strip():

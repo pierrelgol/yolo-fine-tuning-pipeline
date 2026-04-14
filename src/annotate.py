@@ -1,8 +1,8 @@
 from __future__ import annotations
 
+import tkinter as tk
 from dataclasses import dataclass
 from pathlib import Path
-import tkinter as tk
 from tkinter import messagebox, ttk
 
 from PIL import Image, ImageTk
@@ -45,10 +45,18 @@ def launch_annotation_gui(
     manifest_path: Path | None = None,
 ) -> None:
     dataset_dir = config.paths.annotation_dir
-    source_image_dir = resolve_path(image_dir or config.paths.image_dir, base_dir=config.paths.project_root)
+    source_image_dir = resolve_path(
+        image_dir or config.paths.image_dir, base_dir=config.paths.project_root
+    )
     annotation_image_dir = dataset_images_dir(dataset_dir)
-    annotation_label_dir = resolve_path(label_dir or dataset_labels_dir(dataset_dir), base_dir=config.paths.project_root)
-    classes_file_path = resolve_path(classes_path or dataset_classes_path(dataset_dir), base_dir=config.paths.project_root)
+    annotation_label_dir = resolve_path(
+        label_dir or dataset_labels_dir(dataset_dir),
+        base_dir=config.paths.project_root,
+    )
+    classes_file_path = resolve_path(
+        classes_path or dataset_classes_path(dataset_dir),
+        base_dir=config.paths.project_root,
+    )
     dataset_manifest_file_path = resolve_path(
         manifest_path or dataset_manifest_path(dataset_dir),
         base_dir=config.paths.project_root,
@@ -126,7 +134,9 @@ class AnnotatorApp:
         container.rowconfigure(0, weight=1)
         container.columnconfigure(0, weight=1)
 
-        self.canvas = tk.Canvas(container, background="#202124", highlightthickness=0)
+        self.canvas = tk.Canvas(
+            container, background="#202124", highlightthickness=0
+        )
         self.canvas.grid(row=0, column=0, sticky="nsew")
         self.canvas.bind("<ButtonPress-1>", self.on_mouse_press)
         self.canvas.bind("<B1-Motion>", self.on_mouse_drag)
@@ -142,35 +152,57 @@ class AnnotatorApp:
         self.image_status_label.grid(row=0, column=0, sticky="ew", pady=(0, 8))
 
         ttk.Label(sidebar, text="Class name").grid(row=1, column=0, sticky="w")
-        self.class_name_combobox = ttk.Combobox(sidebar, textvariable=self.class_name_var)
+        self.class_name_combobox = ttk.Combobox(
+            sidebar, textvariable=self.class_name_var
+        )
         self.class_name_combobox.grid(row=2, column=0, sticky="ew", pady=(4, 8))
-        self.class_name_combobox.bind("<<ComboboxSelected>>", self.on_class_name_selected)
+        self.class_name_combobox.bind(
+            "<<ComboboxSelected>>", self.on_class_name_selected
+        )
         self.class_name_combobox.bind("<Return>", self.on_class_name_selected)
 
         self.annotation_listbox = tk.Listbox(sidebar, height=18)
         self.annotation_listbox.grid(row=3, column=0, sticky="nsew")
-        self.annotation_listbox.bind("<<ListboxSelect>>", self.on_annotation_selected)
+        self.annotation_listbox.bind(
+            "<<ListboxSelect>>", self.on_annotation_selected
+        )
 
         action_row = ttk.Frame(sidebar)
         action_row.grid(row=4, column=0, sticky="ew", pady=(8, 8))
         action_row.columnconfigure(0, weight=1)
         action_row.columnconfigure(1, weight=1)
 
-        ttk.Button(action_row, text="Delete Selected", command=self.delete_selected_annotation).grid(row=0, column=0, sticky="ew")
-        ttk.Button(action_row, text="Delete Last", command=self.delete_last_annotation).grid(row=0, column=1, sticky="ew", padx=(8, 0))
+        ttk.Button(
+            action_row,
+            text="Delete Selected",
+            command=self.delete_selected_annotation,
+        ).grid(row=0, column=0, sticky="ew")
+        ttk.Button(
+            action_row, text="Delete Last", command=self.delete_last_annotation
+        ).grid(row=0, column=1, sticky="ew", padx=(8, 0))
 
         navigation_row = ttk.Frame(sidebar)
         navigation_row.grid(row=5, column=0, sticky="ew")
         for column_index in range(4):
             navigation_row.columnconfigure(column_index, weight=1)
 
-        ttk.Button(navigation_row, text="Prev", command=self.show_previous_image).grid(row=0, column=0, sticky="ew")
-        ttk.Button(navigation_row, text="Save", command=self.save_current_annotations).grid(row=0, column=1, sticky="ew", padx=8)
-        ttk.Button(navigation_row, text="Next", command=self.show_next_image).grid(row=0, column=2, sticky="ew")
-        ttk.Button(navigation_row, text="Finish", command=self.finish_annotation).grid(row=0, column=3, sticky="ew", padx=(8, 0))
+        ttk.Button(
+            navigation_row, text="Prev", command=self.show_previous_image
+        ).grid(row=0, column=0, sticky="ew")
+        ttk.Button(
+            navigation_row, text="Save", command=self.save_current_annotations
+        ).grid(row=0, column=1, sticky="ew", padx=8)
+        ttk.Button(
+            navigation_row, text="Next", command=self.show_next_image
+        ).grid(row=0, column=2, sticky="ew")
+        ttk.Button(
+            navigation_row, text="Finish", command=self.finish_annotation
+        ).grid(row=0, column=3, sticky="ew", padx=(8, 0))
 
         instructions = "Draw a box with the mouse. Type the class name before you release the mouse button."
-        ttk.Label(sidebar, text=instructions, wraplength=260, justify="left").grid(row=6, column=0, sticky="ew", pady=(12, 0))
+        ttk.Label(
+            sidebar, text=instructions, wraplength=260, justify="left"
+        ).grid(row=6, column=0, sticky="ew", pady=(12, 0))
 
     def sync_images_into_dataset(self) -> list[Path]:
         copied_paths: list[Path] = []
@@ -192,20 +224,30 @@ class AnnotatorApp:
         self.image_width, self.image_height = self.current_image.size
         self.current_annotations = []
 
-        for class_id, bbox in parse_yolo_labels(self.label_path_for_image(image_path)):
+        for class_id, bbox in parse_yolo_labels(
+            self.label_path_for_image(image_path)
+        ):
             self.current_annotations.append(
-                Annotation(class_id=class_id, class_name=self.class_name_for_id(class_id), bbox=bbox)
+                Annotation(
+                    class_id=class_id,
+                    class_name=self.class_name_for_id(class_id),
+                    bbox=bbox,
+                )
             )
 
         relative_path = image_path.relative_to(self.dataset_dir)
-        self.image_status_label.config(text=f"{image_index + 1}/{len(self.image_paths)}\n{relative_path}")
+        self.image_status_label.config(
+            text=f"{image_index + 1}/{len(self.image_paths)}\n{relative_path}"
+        )
         self.refresh_class_selector()
         self.set_default_class_name(image_path)
         self.refresh_annotation_list()
         self.render()
 
     def label_path_for_image(self, image_path: Path) -> Path:
-        return image_label_path(image_path, self.annotation_image_dir, self.label_dir)
+        return image_label_path(
+            image_path, self.annotation_image_dir, self.label_dir
+        )
 
     def refresh_annotation_list(self) -> None:
         self.annotation_listbox.delete(0, tk.END)
@@ -217,7 +259,10 @@ class AnnotatorApp:
             )
 
     def refresh_class_selector(self) -> None:
-        ordered_class_names = sorted(self.class_map, key=lambda class_name: (self.class_map[class_name], class_name))
+        ordered_class_names = sorted(
+            self.class_map,
+            key=lambda class_name: (self.class_map[class_name], class_name),
+        )
         self.class_name_combobox["values"] = ordered_class_names
 
     def set_default_class_name(self, image_path: Path) -> None:
@@ -242,22 +287,34 @@ class AnnotatorApp:
 
         canvas_width = max(1, self.canvas.winfo_width())
         canvas_height = max(1, self.canvas.winfo_height())
-        self.display_scale = min(canvas_width / self.image_width, canvas_height / self.image_height)
+        self.display_scale = min(
+            canvas_width / self.image_width, canvas_height / self.image_height
+        )
 
         display_width = max(1, int(self.image_width * self.display_scale))
         display_height = max(1, int(self.image_height * self.display_scale))
         self.display_offset_x = (canvas_width - display_width) / 2
         self.display_offset_y = (canvas_height - display_height) / 2
 
-        resized_image = self.current_image.resize((display_width, display_height))
+        resized_image = self.current_image.resize((
+            display_width,
+            display_height,
+        ))
         self.current_photo = ImageTk.PhotoImage(resized_image)
 
         self.canvas.delete("all")
-        self.canvas.create_image(self.display_offset_x, self.display_offset_y, anchor="nw", image=self.current_photo)
+        self.canvas.create_image(
+            self.display_offset_x,
+            self.display_offset_y,
+            anchor="nw",
+            image=self.current_photo,
+        )
 
         for annotation in self.current_annotations:
             x1, y1, x2, y2 = self.canvas_coordinates_for_bbox(annotation.bbox)
-            self.canvas.create_rectangle(x1, y1, x2, y2, outline="#00d084", width=2)
+            self.canvas.create_rectangle(
+                x1, y1, x2, y2, outline="#00d084", width=2
+            )
             self.canvas.create_text(
                 x1 + 4,
                 max(y1 - 12, 4),
@@ -268,9 +325,17 @@ class AnnotatorApp:
             )
 
         if self.drag_start is not None and self.drag_end is not None:
-            self.canvas.create_rectangle(*self.drag_start, *self.drag_end, outline="#ffb703", width=2, dash=(6, 4))
+            self.canvas.create_rectangle(
+                *self.drag_start,
+                *self.drag_end,
+                outline="#ffb703",
+                width=2,
+                dash=(6, 4),
+            )
 
-    def canvas_coordinates_for_bbox(self, bbox: tuple[float, float, float, float]) -> tuple[float, float, float, float]:
+    def canvas_coordinates_for_bbox(
+        self, bbox: tuple[float, float, float, float]
+    ) -> tuple[float, float, float, float]:
         x_center, y_center, width, height = bbox
         left = (x_center - width / 2) * self.image_width
         top = (y_center - height / 2) * self.image_height
@@ -283,20 +348,32 @@ class AnnotatorApp:
             self.display_offset_y + bottom * self.display_scale,
         )
 
-    def clamp_canvas_point_to_image(self, x: float, y: float) -> tuple[float, float]:
+    def clamp_canvas_point_to_image(
+        self, x: float, y: float
+    ) -> tuple[float, float]:
         minimum_x = self.display_offset_x
         minimum_y = self.display_offset_y
-        maximum_x = self.display_offset_x + self.image_width * self.display_scale
-        maximum_y = self.display_offset_y + self.image_height * self.display_scale
-        return min(max(x, minimum_x), maximum_x), min(max(y, minimum_y), maximum_y)
+        maximum_x = (
+            self.display_offset_x + self.image_width * self.display_scale
+        )
+        maximum_y = (
+            self.display_offset_y + self.image_height * self.display_scale
+        )
+        return min(max(x, minimum_x), maximum_x), min(
+            max(y, minimum_y), maximum_y
+        )
 
-    def image_coordinates_for_canvas_point(self, x: float, y: float) -> tuple[float, float]:
+    def image_coordinates_for_canvas_point(
+        self, x: float, y: float
+    ) -> tuple[float, float]:
         return (
             (x - self.display_offset_x) / self.display_scale,
             (y - self.display_offset_y) / self.display_scale,
         )
 
-    def bbox_from_drag(self, start_point: tuple[float, float], end_point: tuple[float, float]) -> tuple[float, float, float, float]:
+    def bbox_from_drag(
+        self, start_point: tuple[float, float], end_point: tuple[float, float]
+    ) -> tuple[float, float, float, float]:
         start_x, start_y = self.image_coordinates_for_canvas_point(*start_point)
         end_x, end_y = self.image_coordinates_for_canvas_point(*end_point)
         left = min(start_x, end_x)
@@ -334,7 +411,9 @@ class AnnotatorApp:
         class_name = self.class_name_var.get().strip()
         if not class_name:
             self.clear_drag()
-            messagebox.showerror("Missing class name", "Enter a class name before drawing a box.")
+            messagebox.showerror(
+                "Missing class name", "Enter a class name before drawing a box."
+            )
             return
 
         bbox = self.bbox_from_drag(self.drag_start, self.drag_end)
@@ -344,7 +423,11 @@ class AnnotatorApp:
             return
 
         self.current_annotations.append(
-            Annotation(class_id=self.class_id_for_name(class_name), class_name=class_name, bbox=bbox)
+            Annotation(
+                class_id=self.class_id_for_name(class_name),
+                class_name=class_name,
+                bbox=bbox,
+            )
         )
         self.refresh_class_selector()
         self.class_name_var.set(class_name)
@@ -370,10 +453,17 @@ class AnnotatorApp:
 
     def save_current_annotations(self) -> None:
         image_path = self.image_paths[self.current_image_index]
-        label_lines = [f"{annotation.class_id} {annotation.bbox[0]:.6f} {annotation.bbox[1]:.6f} {annotation.bbox[2]:.6f} {annotation.bbox[3]:.6f}" for annotation in self.current_annotations]
+        label_lines = [
+            f"{annotation.class_id} {annotation.bbox[0]:.6f} {annotation.bbox[1]:.6f} {annotation.bbox[2]:.6f} {annotation.bbox[3]:.6f}"
+            for annotation in self.current_annotations
+        ]
         save_yolo_labels(self.label_path_for_image(image_path), label_lines)
         save_class_map(self.classes_path, self.class_map)
-        write_dataset_yaml(self.dataset_dir, ordered_class_names(self.class_map), val_split="train2017")
+        write_dataset_yaml(
+            self.dataset_dir,
+            ordered_class_names(self.class_map),
+            val_split="train2017",
+        )
         self.write_manifest()
         self.refresh_annotation_list()
         self.render()
@@ -384,22 +474,30 @@ class AnnotatorApp:
             label_path = self.label_path_for_image(image_path)
             if not label_path.exists():
                 continue
-            annotated_images.append(
-                {
-                    "image": portable_path(image_path, base_dir=self.project_root),
-                    "label": portable_path(label_path, base_dir=self.project_root),
-                    "num_annotations": len(parse_yolo_labels(label_path)),
-                }
-            )
+            annotated_images.append({
+                "image": portable_path(image_path, base_dir=self.project_root),
+                "label": portable_path(label_path, base_dir=self.project_root),
+                "num_annotations": len(parse_yolo_labels(label_path)),
+            })
 
         write_json(
             self.manifest_path,
             {
-                "dataset_dir": portable_path(self.dataset_dir, base_dir=self.project_root),
-                "source_image_dir": portable_path(self.source_image_dir, base_dir=self.project_root),
-                "image_dir": portable_path(self.annotation_image_dir, base_dir=self.project_root),
-                "label_dir": portable_path(self.label_dir, base_dir=self.project_root),
-                "classes_path": portable_path(self.classes_path, base_dir=self.project_root),
+                "dataset_dir": portable_path(
+                    self.dataset_dir, base_dir=self.project_root
+                ),
+                "source_image_dir": portable_path(
+                    self.source_image_dir, base_dir=self.project_root
+                ),
+                "image_dir": portable_path(
+                    self.annotation_image_dir, base_dir=self.project_root
+                ),
+                "label_dir": portable_path(
+                    self.label_dir, base_dir=self.project_root
+                ),
+                "classes_path": portable_path(
+                    self.classes_path, base_dir=self.project_root
+                ),
                 "num_images": len(self.image_paths),
                 "annotated_images": annotated_images,
             },

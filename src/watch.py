@@ -23,16 +23,24 @@ def watch_video(
         if weights_path is not None
         else config.paths.train_best_weights_path
     )
-    selected_confidence = config.watch.confidence if confidence is None else confidence
-    selected_image_size = config.watch.image_size if image_size is None else image_size
+    selected_confidence = (
+        config.watch.confidence if confidence is None else confidence
+    )
+    selected_image_size = (
+        config.watch.image_size if image_size is None else image_size
+    )
 
     if not selected_weights_path.exists():
-        raise FileNotFoundError(f"Watch weights not found: {selected_weights_path}")
+        raise FileNotFoundError(
+            f"Watch weights not found: {selected_weights_path}"
+        )
 
     capture_source = parse_capture_source(selected_source)
     video_capture = cv2.VideoCapture(capture_source)
     if not video_capture.isOpened():
-        raise FileNotFoundError(f"Unable to open video source: {selected_source}")
+        raise FileNotFoundError(
+            f"Unable to open video source: {selected_source}"
+        )
 
     model = YOLO(str(selected_weights_path))
     window_name = config.watch.window_name
@@ -74,7 +82,9 @@ def resolve_watch_source(config: AppConfig, source: str | None) -> str:
     selected_source = source or config.watch.source
     if selected_source.strip():
         return selected_source.strip()
-    raise ValueError("No video source provided. Pass a path to `watch` or set [watch].source in config.toml.")
+    raise ValueError(
+        "No video source provided. Pass a path to `watch` or set [watch].source in config.toml."
+    )
 
 
 def parse_capture_source(source: str) -> str | int:
@@ -99,5 +109,21 @@ def draw_controls_overlay(frame, source: str) -> None:
     import cv2
 
     source_name = Path(source).name or source
-    cv2.putText(frame, f"source: {source_name}", (16, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-    cv2.putText(frame, "q: quit  space: pause", (16, 56), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
+    cv2.putText(
+        frame,
+        f"source: {source_name}",
+        (16, 28),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        (255, 255, 255),
+        2,
+    )
+    cv2.putText(
+        frame,
+        "q: quit  space: pause",
+        (16, 56),
+        cv2.FONT_HERSHEY_SIMPLEX,
+        0.7,
+        (255, 255, 255),
+        2,
+    )

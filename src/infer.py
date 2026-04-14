@@ -41,14 +41,18 @@ def run_inference(
     force: bool = False,
 ) -> Path:
     dataset_path = dataset_subdir or Path(config.infer.dataset_name)
-    dataset_dir = resolve_dataset_directory(config.paths.project_root, config.paths.dataset_dir, dataset_path)
+    dataset_dir = resolve_dataset_directory(
+        config.paths.project_root, config.paths.dataset_dir, dataset_path
+    )
     weights_file_path = (
         resolve_path(weights_path, base_dir=config.paths.project_root)
         if weights_path is not None
         else config.paths.train_best_weights_path
     )
     if not weights_file_path.exists():
-        raise FileNotFoundError(f"Inference weights not found: {weights_file_path}")
+        raise FileNotFoundError(
+            f"Inference weights not found: {weights_file_path}"
+        )
 
     image_split = preferred_image_split(dataset_dir)
     if not image_split:
@@ -78,9 +82,15 @@ def run_inference(
             "task": "infer",
             "run_name": run_name,
             "parent_train_run_name": parent_run_name,
-            "dataset_dir": portable_path(dataset_dir, base_dir=config.paths.project_root),
-            "images_root": portable_path(images_root, base_dir=config.paths.project_root),
-            "weights_path": portable_path(weights_file_path, base_dir=config.paths.project_root),
+            "dataset_dir": portable_path(
+                dataset_dir, base_dir=config.paths.project_root
+            ),
+            "images_root": portable_path(
+                images_root, base_dir=config.paths.project_root
+            ),
+            "weights_path": portable_path(
+                weights_file_path, base_dir=config.paths.project_root
+            ),
             "num_images": len(source_image_paths),
         },
     )
@@ -96,19 +106,35 @@ def run_inference(
             save_txt=False,
         )
 
-        for image_path, prediction_result in zip(source_image_paths, prediction_results, strict=True):
-            prediction_path = predictions_root / image_path.relative_to(images_root).with_suffix(".txt")
-            save_yolo_labels(prediction_path, prediction_lines_for_result(prediction_result))
+        for image_path, prediction_result in zip(
+            source_image_paths, prediction_results, strict=True
+        ):
+            prediction_path = predictions_root / image_path.relative_to(
+                images_root
+            ).with_suffix(".txt")
+            save_yolo_labels(
+                prediction_path, prediction_lines_for_result(prediction_result)
+            )
 
         summary = summarize_inference_results(prediction_results)
         manifest = {
             "run_name": run_name,
-            "dataset_dir": portable_path(dataset_dir, base_dir=config.paths.project_root),
+            "dataset_dir": portable_path(
+                dataset_dir, base_dir=config.paths.project_root
+            ),
             "image_split": image_split,
-            "images_root": portable_path(images_root, base_dir=config.paths.project_root),
-            "predictions_dir": portable_path(predictions_root, base_dir=config.paths.project_root),
-            "run_dir": portable_path(run_dir, base_dir=config.paths.project_root),
-            "weights_path": portable_path(weights_file_path, base_dir=config.paths.project_root),
+            "images_root": portable_path(
+                images_root, base_dir=config.paths.project_root
+            ),
+            "predictions_dir": portable_path(
+                predictions_root, base_dir=config.paths.project_root
+            ),
+            "run_dir": portable_path(
+                run_dir, base_dir=config.paths.project_root
+            ),
+            "weights_path": portable_path(
+                weights_file_path, base_dir=config.paths.project_root
+            ),
             "num_images": len(source_image_paths),
         }
         write_json(run_dir / "manifest.json", manifest)
@@ -116,17 +142,38 @@ def run_inference(
         write_json(config.paths.infer_latest_manifest_path, manifest)
 
         log_tracking_metrics(tracking_session, summary)
-        log_tracking_key_value_table(tracking_session, "tables/inference_summary", summary)
+        log_tracking_key_value_table(
+            tracking_session, "tables/inference_summary", summary
+        )
         log_tracking_table(
             tracking_session,
             "tables/inference_samples",
-            ["image", "num_detections", "top_class_id", "top_confidence", "average_confidence"],
-            build_inference_sample_rows(source_image_paths, prediction_results, config.tracking.max_logged_table_rows),
+            [
+                "image",
+                "num_detections",
+                "top_class_id",
+                "top_confidence",
+                "average_confidence",
+            ],
+            build_inference_sample_rows(
+                source_image_paths,
+                prediction_results,
+                config.tracking.max_logged_table_rows,
+            ),
         )
-        log_tracking_images(tracking_session, build_inference_image_mapping(run_dir, config.tracking.max_logged_images))
+        log_tracking_images(
+            tracking_session,
+            build_inference_image_mapping(
+                run_dir, config.tracking.max_logged_images
+            ),
+        )
         save_tracking_artifacts(
             tracking_session,
-            [run_dir / "manifest.json", dataset_dir / "predictions_manifest.json", config.paths.infer_latest_manifest_path],
+            [
+                run_dir / "manifest.json",
+                dataset_dir / "predictions_manifest.json",
+                config.paths.infer_latest_manifest_path,
+            ],
         )
 
         print(f"Inference run: {run_name}")
@@ -146,7 +193,11 @@ def prediction_lines_for_result(prediction_result) -> list[str]:
 
     prediction_lines: list[str] = []
     for index in range(len(boxes)):
-        prediction_lines.append(yolo_label_line(int(boxes.cls[index].item()), boxes.xywhn[index].tolist()))
+        prediction_lines.append(
+            yolo_label_line(
+                int(boxes.cls[index].item()), boxes.xywhn[index].tolist()
+            )
+        )
     return prediction_lines
 
 
@@ -156,7 +207,9 @@ def build_inference_sample_rows(
     max_rows: int,
 ) -> list[list[Any]]:
     rows: list[list[Any]] = []
-    for image_path, prediction_result in zip(image_paths, prediction_results, strict=True):
+    for image_path, prediction_result in zip(
+        image_paths, prediction_results, strict=True
+    ):
         if len(rows) >= max_rows:
             break
 
@@ -174,16 +227,27 @@ def build_inference_sample_rows(
                 top_index = int(boxes.conf.argmax().item())
                 top_class_id = int(boxes.cls[top_index].item())
 
-        rows.append([image_path.name, num_detections, top_class_id, top_confidence, average_confidence])
+        rows.append([
+            image_path.name,
+            num_detections,
+            top_class_id,
+            top_confidence,
+            average_confidence,
+        ])
     return rows
 
 
-def build_inference_image_mapping(run_dir: Path, max_logged_images: int) -> dict[str, tuple[Path, str | None]]:
+def build_inference_image_mapping(
+    run_dir: Path, max_logged_images: int
+) -> dict[str, tuple[Path, str | None]]:
     image_mapping: dict[str, tuple[Path, str | None]] = {}
     for index, image_path in enumerate(discover_images(run_dir)):
         if index >= max_logged_images:
             break
-        image_mapping[f"images/inference_sample_{index + 1}"] = (image_path, f"Rendered output for {image_path.name}.")
+        image_mapping[f"images/inference_sample_{index + 1}"] = (
+            image_path,
+            f"Rendered output for {image_path.name}.",
+        )
     return image_mapping
 
 
@@ -204,7 +268,9 @@ def summarize_inference_results(prediction_results: list) -> dict[str, float]:
         if num_detections > 0:
             images_with_detections += 1
             if boxes.conf is not None:
-                confidence_values.extend(float(value) for value in boxes.conf.tolist())
+                confidence_values.extend(
+                    float(value) for value in boxes.conf.tolist()
+                )
 
         speed = getattr(prediction_result, "speed", {}) or {}
         if "preprocess" in speed:
@@ -214,7 +280,11 @@ def summarize_inference_results(prediction_results: list) -> dict[str, float]:
         if "postprocess" in speed:
             postprocess_times.append(float(speed["postprocess"]))
 
-    average_confidence = sum(confidence_values) / len(confidence_values) if confidence_values else 0.0
+    average_confidence = (
+        sum(confidence_values) / len(confidence_values)
+        if confidence_values
+        else 0.0
+    )
     average_detections = total_detections / num_images if num_images else 0.0
 
     return {
@@ -223,8 +293,12 @@ def summarize_inference_results(prediction_results: list) -> dict[str, float]:
         "infer/total_detections": total_detections,
         "infer/average_detections_per_image": average_detections,
         "infer/average_confidence": average_confidence,
-        "infer/max_confidence": max(confidence_values) if confidence_values else 0.0,
-        "infer/min_confidence": min(confidence_values) if confidence_values else 0.0,
+        "infer/max_confidence": max(confidence_values)
+        if confidence_values
+        else 0.0,
+        "infer/min_confidence": min(confidence_values)
+        if confidence_values
+        else 0.0,
         "infer/speed_preprocess_ms": average(preprocess_times),
         "infer/speed_inference_ms": average(inference_times),
         "infer/speed_postprocess_ms": average(postprocess_times),

@@ -5,7 +5,14 @@ from pathlib import Path
 
 from ultralytics import YOLO
 
-from src.common import child_run_name, latest_train_run_name, portable_path, remove_path, resolve_path, sanitized_name
+from src.common import (
+    child_run_name,
+    latest_train_run_name,
+    portable_path,
+    remove_path,
+    resolve_path,
+    sanitized_name,
+)
 from src.config import AppConfig
 from src.tracking import (
     alert_tracking_failure,
@@ -24,16 +31,22 @@ def evaluate_model(
     weights_path: Path | None = None,
     force: bool = False,
 ) -> Path:
-    selected_dataset_yaml_path = resolve_dataset_yaml_path(config, dataset_yaml_path)
+    selected_dataset_yaml_path = resolve_dataset_yaml_path(
+        config, dataset_yaml_path
+    )
     selected_weights_path = (
         resolve_path(weights_path, base_dir=config.paths.project_root)
         if weights_path is not None
         else config.paths.train_best_weights_path
     )
     if not selected_dataset_yaml_path.exists():
-        raise FileNotFoundError(f"Evaluation dataset config not found: {selected_dataset_yaml_path}")
+        raise FileNotFoundError(
+            f"Evaluation dataset config not found: {selected_dataset_yaml_path}"
+        )
     if not selected_weights_path.exists():
-        raise FileNotFoundError(f"Evaluation weights not found: {selected_weights_path}")
+        raise FileNotFoundError(
+            f"Evaluation weights not found: {selected_weights_path}"
+        )
 
     parent_run_name = latest_train_run_name(
         config.paths.train_runs_dir,
@@ -54,8 +67,12 @@ def evaluate_model(
             "task": "eval",
             "run_name": run_name,
             "parent_train_run_name": parent_run_name,
-            "dataset_yaml_path": portable_path(selected_dataset_yaml_path, base_dir=config.paths.project_root),
-            "weights_path": portable_path(selected_weights_path, base_dir=config.paths.project_root),
+            "dataset_yaml_path": portable_path(
+                selected_dataset_yaml_path, base_dir=config.paths.project_root
+            ),
+            "weights_path": portable_path(
+                selected_weights_path, base_dir=config.paths.project_root
+            ),
         },
     )
 
@@ -72,33 +89,56 @@ def evaluate_model(
         metrics = dict(getattr(evaluation_results, "results_dict", {}) or {})
         metrics_json = json.dumps(metrics, indent=2, sort_keys=True)
         (run_dir / "metrics.json").write_text(metrics_json, encoding="utf-8")
-        config.paths.eval_latest_metrics_path.write_text(metrics_json, encoding="utf-8")
+        config.paths.eval_latest_metrics_path.write_text(
+            metrics_json, encoding="utf-8"
+        )
 
         summary = build_evaluation_summary(metrics, evaluation_results)
         log_tracking_metrics(tracking_session, summary)
-        log_tracking_key_value_table(tracking_session, "tables/evaluation_summary", summary)
-        log_tracking_images(tracking_session, build_evaluation_image_mapping(run_dir, config.tracking.max_logged_images))
+        log_tracking_key_value_table(
+            tracking_session, "tables/evaluation_summary", summary
+        )
+        log_tracking_images(
+            tracking_session,
+            build_evaluation_image_mapping(
+                run_dir, config.tracking.max_logged_images
+            ),
+        )
         save_tracking_artifacts(
             tracking_session,
-            [run_dir / "metrics.json", config.paths.eval_latest_metrics_path, run_dir / "args.yaml"],
+            [
+                run_dir / "metrics.json",
+                config.paths.eval_latest_metrics_path,
+                run_dir / "args.yaml",
+            ],
         )
 
         print(f"Evaluation run: {run_name}")
         print(f"Latest metrics: {config.paths.eval_latest_metrics_path}")
         return config.paths.eval_latest_metrics_path
     except Exception as error:
-        alert_tracking_failure(tracking_session, "Evaluation failed", str(error))
+        alert_tracking_failure(
+            tracking_session, "Evaluation failed", str(error)
+        )
         raise
     finally:
         finish_tracking_run(tracking_session)
 
 
-def resolve_dataset_yaml_path(config: AppConfig, dataset_yaml_path: Path | None) -> Path:
-    selected_dataset_yaml_path = dataset_yaml_path or Path(config.evaluate.dataset_yaml)
-    return resolve_path(selected_dataset_yaml_path, base_dir=config.paths.project_root)
+def resolve_dataset_yaml_path(
+    config: AppConfig, dataset_yaml_path: Path | None
+) -> Path:
+    selected_dataset_yaml_path = dataset_yaml_path or Path(
+        config.evaluate.dataset_yaml
+    )
+    return resolve_path(
+        selected_dataset_yaml_path, base_dir=config.paths.project_root
+    )
 
 
-def build_evaluation_summary(metrics: dict[str, float], evaluation_results) -> dict[str, float]:
+def build_evaluation_summary(
+    metrics: dict[str, float], evaluation_results
+) -> dict[str, float]:
     speed = getattr(evaluation_results, "speed", {}) or {}
     return {
         "eval/precision": metrics.get("metrics/precision(B)"),
@@ -113,11 +153,25 @@ def build_evaluation_summary(metrics: dict[str, float], evaluation_results) -> d
     }
 
 
-def build_evaluation_image_mapping(run_dir: Path, max_logged_images: int) -> dict[str, tuple[Path, str | None]]:
+def build_evaluation_image_mapping(
+    run_dir: Path, max_logged_images: int
+) -> dict[str, tuple[Path, str | None]]:
     candidate_images = [
-        ("images/eval_confusion_matrix", run_dir / "confusion_matrix.png", "Evaluation confusion matrix."),
-        ("images/eval_precision_recall_curve", run_dir / "PR_curve.png", "Evaluation precision recall curve."),
-        ("images/eval_prediction_preview", run_dir / "val_batch0_pred.jpg", "Evaluation prediction preview."),
+        (
+            "images/eval_confusion_matrix",
+            run_dir / "confusion_matrix.png",
+            "Evaluation confusion matrix.",
+        ),
+        (
+            "images/eval_precision_recall_curve",
+            run_dir / "PR_curve.png",
+            "Evaluation precision recall curve.",
+        ),
+        (
+            "images/eval_prediction_preview",
+            run_dir / "val_batch0_pred.jpg",
+            "Evaluation prediction preview.",
+        ),
     ]
 
     image_mapping: dict[str, tuple[Path, str | None]] = {}
