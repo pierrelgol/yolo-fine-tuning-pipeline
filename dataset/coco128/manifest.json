@@ -1,0 +1,8 @@
+{
+  "dataset_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\coco128",
+  "dataset_yaml": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\coco128\\dataset.yaml",
+  "image_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\coco128\\images\\train2017",
+  "label_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\coco128\\labels\\train2017",
+  "num_images": 128,
+  "prediction_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\coco128\\predictions\\train2017"
+}
