@@ -1,5 +1,3 @@
-set shell := ["cmd.exe", "/c"]
-
 install:
     uv sync
 

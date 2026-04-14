@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 import re
 import shutil
@@ -173,6 +174,53 @@ def dataset_manifest_path(dataset_dir: Path) -> Path:
     return dataset_dir / "manifest.json"
 
 
+def resolve_path(path: Path | str, base_dir: Path | None = None) -> Path:
+    raw_path = Path(os.path.expandvars(os.path.expanduser(str(path))))
+    if raw_path.is_absolute():
+        return raw_path.resolve()
+    anchor_dir = base_dir.resolve() if base_dir is not None else Path.cwd().resolve()
+    return (anchor_dir / raw_path).resolve()
+
+
+def portable_path(path: Path | str, base_dir: Path | None = None) -> str:
+    resolved_path = resolve_path(path, base_dir=base_dir)
+    if base_dir is None:
+        return resolved_path.as_posix()
+
+    try:
+        return resolved_path.relative_to(base_dir.resolve()).as_posix()
+    except ValueError:
+        return resolved_path.as_posix()
+
+
+def resolve_portable_path(
+    value: str,
+    *,
+    project_root: Path,
+    dataset_root: Path | None = None,
+) -> Path:
+    candidate_path = Path(os.path.expandvars(os.path.expanduser(value)))
+    if candidate_path.is_absolute():
+        return candidate_path.resolve()
+
+    base_dirs: list[Path] = []
+    if dataset_root is not None:
+        base_dirs.append(dataset_root.resolve())
+    base_dirs.extend([project_root.resolve(), Path.cwd().resolve()])
+
+    seen_base_dirs: set[Path] = set()
+    for base_dir in base_dirs:
+        if base_dir in seen_base_dirs:
+            continue
+        seen_base_dirs.add(base_dir)
+
+        resolved_candidate = (base_dir / candidate_path).resolve()
+        if resolved_candidate.exists():
+            return resolved_candidate
+
+    return (project_root.resolve() / candidate_path).resolve()
+
+
 def write_dataset_yaml(
     dataset_dir: Path,
     class_names: Sequence[str],
@@ -185,7 +233,6 @@ def write_dataset_yaml(
         val_split = VAL_SPLIT if dataset_images_dir(dataset_dir, VAL_SPLIT).exists() else train_split
 
     payload = {
-        "path": str(dataset_dir.resolve()),
         "train": f"images/{train_split}",
         "val": f"images/{val_split}",
         "names": {index: name for index, name in enumerate(class_names)},
@@ -208,9 +255,9 @@ def resolve_dataset_directory(project_root: Path, dataset_root: Path, dataset_pa
     if dataset_path.is_absolute():
         candidate_paths.append(dataset_path.resolve())
     else:
-        candidate_paths.append((Path.cwd() / dataset_path).resolve())
-        candidate_paths.append((project_root / dataset_path).resolve())
         candidate_paths.append((dataset_root / dataset_path).resolve())
+        candidate_paths.append((project_root / dataset_path).resolve())
+        candidate_paths.append((Path.cwd() / dataset_path).resolve())
 
     for candidate_path in candidate_paths:
         if candidate_path.exists():

@@ -11,9 +11,11 @@ from src.common import (
     dataset_predictions_dir,
     discover_images,
     latest_train_run_name,
+    portable_path,
     preferred_image_split,
     remove_path,
     resolve_dataset_directory,
+    resolve_path,
     sanitized_name,
     save_yolo_labels,
     write_json,
@@ -40,7 +42,11 @@ def run_inference(
 ) -> Path:
     dataset_path = dataset_subdir or Path(config.infer.dataset_name)
     dataset_dir = resolve_dataset_directory(config.paths.project_root, config.paths.dataset_dir, dataset_path)
-    weights_file_path = weights_path or config.paths.train_best_weights_path
+    weights_file_path = (
+        resolve_path(weights_path, base_dir=config.paths.project_root)
+        if weights_path is not None
+        else config.paths.train_best_weights_path
+    )
     if not weights_file_path.exists():
         raise FileNotFoundError(f"Inference weights not found: {weights_file_path}")
 
@@ -72,9 +78,9 @@ def run_inference(
             "task": "infer",
             "run_name": run_name,
             "parent_train_run_name": parent_run_name,
-            "dataset_dir": str(dataset_dir),
-            "images_root": str(images_root),
-            "weights_path": str(weights_file_path),
+            "dataset_dir": portable_path(dataset_dir, base_dir=config.paths.project_root),
+            "images_root": portable_path(images_root, base_dir=config.paths.project_root),
+            "weights_path": portable_path(weights_file_path, base_dir=config.paths.project_root),
             "num_images": len(source_image_paths),
         },
     )
@@ -97,12 +103,12 @@ def run_inference(
         summary = summarize_inference_results(prediction_results)
         manifest = {
             "run_name": run_name,
-            "dataset_dir": str(dataset_dir),
+            "dataset_dir": portable_path(dataset_dir, base_dir=config.paths.project_root),
             "image_split": image_split,
-            "images_root": str(images_root),
-            "predictions_dir": str(predictions_root),
-            "run_dir": str(run_dir),
-            "weights_path": str(weights_file_path),
+            "images_root": portable_path(images_root, base_dir=config.paths.project_root),
+            "predictions_dir": portable_path(predictions_root, base_dir=config.paths.project_root),
+            "run_dir": portable_path(run_dir, base_dir=config.paths.project_root),
+            "weights_path": portable_path(weights_file_path, base_dir=config.paths.project_root),
             "num_images": len(source_image_paths),
         }
         write_json(run_dir / "manifest.json", manifest)

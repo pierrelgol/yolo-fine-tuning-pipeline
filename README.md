@@ -29,7 +29,7 @@ Each dataset folder uses the same basic shape when relevant:
 
 ## Install
 
-```powershell
+```text
 just install
 ```
 
@@ -37,15 +37,15 @@ This project is intentionally CUDA-first on Windows through the PyTorch CUDA ind
 
 ## Typical Flow
 
-```powershell
+```text
 just fetch
 just setup
 just annotate
-just augment .\dataset\coco128
+just augment <background_dir>
 just train
 just eval
 just infer
-just watch path\to\video.mp4
+just watch <video_path>
 just visualize
 ```
 
@@ -77,6 +77,6 @@ just visualize
 
 Override any command from the CLI when needed:
 
-```powershell
+```text
 uv run python cli.py train --epochs 20 --batch 16
 ```

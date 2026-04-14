@@ -5,7 +5,7 @@ from pathlib import Path
 
 from ultralytics import YOLO
 
-from src.common import child_run_name, latest_train_run_name, remove_path, sanitized_name
+from src.common import child_run_name, latest_train_run_name, portable_path, remove_path, resolve_path, sanitized_name
 from src.config import AppConfig
 from src.tracking import (
     alert_tracking_failure,
@@ -25,7 +25,11 @@ def evaluate_model(
     force: bool = False,
 ) -> Path:
     selected_dataset_yaml_path = resolve_dataset_yaml_path(config, dataset_yaml_path)
-    selected_weights_path = weights_path or config.paths.train_best_weights_path
+    selected_weights_path = (
+        resolve_path(weights_path, base_dir=config.paths.project_root)
+        if weights_path is not None
+        else config.paths.train_best_weights_path
+    )
     if not selected_dataset_yaml_path.exists():
         raise FileNotFoundError(f"Evaluation dataset config not found: {selected_dataset_yaml_path}")
     if not selected_weights_path.exists():
@@ -50,8 +54,8 @@ def evaluate_model(
             "task": "eval",
             "run_name": run_name,
             "parent_train_run_name": parent_run_name,
-            "dataset_yaml_path": str(selected_dataset_yaml_path),
-            "weights_path": str(selected_weights_path),
+            "dataset_yaml_path": portable_path(selected_dataset_yaml_path, base_dir=config.paths.project_root),
+            "weights_path": portable_path(selected_weights_path, base_dir=config.paths.project_root),
         },
     )
 
@@ -91,9 +95,7 @@ def evaluate_model(
 
 def resolve_dataset_yaml_path(config: AppConfig, dataset_yaml_path: Path | None) -> Path:
     selected_dataset_yaml_path = dataset_yaml_path or Path(config.evaluate.dataset_yaml)
-    if selected_dataset_yaml_path.is_absolute():
-        return selected_dataset_yaml_path
-    return (config.paths.project_root / selected_dataset_yaml_path).resolve()
+    return resolve_path(selected_dataset_yaml_path, base_dir=config.paths.project_root)
 
 
 def build_evaluation_summary(metrics: dict[str, float], evaluation_results) -> dict[str, float]:

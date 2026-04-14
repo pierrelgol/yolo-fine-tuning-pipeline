@@ -4,6 +4,7 @@ from pathlib import Path
 
 from ultralytics import YOLO
 
+from src.common import resolve_path
 from src.config import AppConfig
 
 
@@ -17,7 +18,11 @@ def watch_video(
     import cv2
 
     selected_source = resolve_watch_source(config, source)
-    selected_weights_path = weights_path or config.paths.train_best_weights_path
+    selected_weights_path = (
+        resolve_path(weights_path, base_dir=config.paths.project_root)
+        if weights_path is not None
+        else config.paths.train_best_weights_path
+    )
     selected_confidence = config.watch.confidence if confidence is None else confidence
     selected_image_size = config.watch.image_size if image_size is None else image_size
 

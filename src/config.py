@@ -4,6 +4,8 @@ from dataclasses import dataclass
 from pathlib import Path
 import tomllib
 
+from src.common import resolve_path as resolve_common_path
+
 
 @dataclass(frozen=True)
 class PathConfig:
@@ -237,7 +239,7 @@ def resolve_config_path(config_path: Path | None) -> Path:
     if config_path is None:
         resolved_path = Path(__file__).resolve().parent.parent / "config.toml"
     else:
-        resolved_path = Path(config_path).resolve()
+        resolved_path = resolve_common_path(config_path)
 
     if not resolved_path.exists():
         raise FileNotFoundError(f"Config file not found: {resolved_path}")
@@ -246,7 +248,8 @@ def resolve_config_path(config_path: Path | None) -> Path:
 
 
 def resolve_path(project_root: Path, configured_path: str) -> Path:
-    candidate_path = Path(configured_path)
-    if candidate_path.is_absolute():
-        return candidate_path
-    return (project_root / candidate_path).resolve()
+    return resolve_path_from_project(project_root, configured_path)
+
+
+def resolve_path_from_project(project_root: Path, configured_path: str) -> Path:
+    return resolve_common_path(configured_path, base_dir=project_root)

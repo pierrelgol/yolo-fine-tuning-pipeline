@@ -15,6 +15,7 @@ from src.common import (
     preferred_image_split,
     read_json,
     resolve_dataset_directory,
+    resolve_portable_path,
 )
 from src.config import AppConfig
 
@@ -54,8 +55,8 @@ def resolve_visualizer_target(config: AppConfig, dataset_subdir: Path | None) ->
         dataset_dir_value = manifest.get("dataset_dir")
         images_root_value = manifest.get("images_root")
         if isinstance(dataset_dir_value, str) and isinstance(images_root_value, str):
-            dataset_dir = Path(dataset_dir_value).resolve()
-            images_root = Path(images_root_value).resolve()
+            dataset_dir = resolve_portable_path(dataset_dir_value, project_root=config.paths.project_root)
+            images_root = resolve_portable_path(images_root_value, project_root=config.paths.project_root)
             if dataset_dir.exists() and images_root.exists():
                 return target_from_paths(dataset_dir, images_root)
 

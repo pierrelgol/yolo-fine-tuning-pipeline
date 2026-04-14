@@ -20,6 +20,8 @@ from src.common import (
     load_class_map,
     ordered_class_names,
     parse_yolo_labels,
+    portable_path,
+    resolve_path,
     save_class_map,
     save_yolo_labels,
     write_dataset_yaml,
@@ -43,11 +45,14 @@ def launch_annotation_gui(
     manifest_path: Path | None = None,
 ) -> None:
     dataset_dir = config.paths.annotation_dir
-    source_image_dir = image_dir or config.paths.image_dir
+    source_image_dir = resolve_path(image_dir or config.paths.image_dir, base_dir=config.paths.project_root)
     annotation_image_dir = dataset_images_dir(dataset_dir)
-    annotation_label_dir = label_dir or dataset_labels_dir(dataset_dir)
-    classes_file_path = classes_path or dataset_classes_path(dataset_dir)
-    dataset_manifest_file_path = manifest_path or dataset_manifest_path(dataset_dir)
+    annotation_label_dir = resolve_path(label_dir or dataset_labels_dir(dataset_dir), base_dir=config.paths.project_root)
+    classes_file_path = resolve_path(classes_path or dataset_classes_path(dataset_dir), base_dir=config.paths.project_root)
+    dataset_manifest_file_path = resolve_path(
+        manifest_path or dataset_manifest_path(dataset_dir),
+        base_dir=config.paths.project_root,
+    )
 
     ensure_dir(annotation_image_dir)
     ensure_dir(annotation_label_dir)
@@ -60,6 +65,7 @@ def launch_annotation_gui(
         classes_path=classes_file_path,
         manifest_path=dataset_manifest_file_path,
         dataset_dir=dataset_dir,
+        project_root=config.paths.project_root,
     ).run()
 
 
@@ -72,6 +78,7 @@ class AnnotatorApp:
         classes_path: Path,
         manifest_path: Path,
         dataset_dir: Path,
+        project_root: Path,
     ) -> None:
         self.source_image_dir = source_image_dir
         self.annotation_image_dir = annotation_image_dir
@@ -79,6 +86,7 @@ class AnnotatorApp:
         self.classes_path = classes_path
         self.manifest_path = manifest_path
         self.dataset_dir = dataset_dir
+        self.project_root = project_root
 
         self.source_image_paths = discover_images(source_image_dir)
         if not self.source_image_paths:
@@ -103,6 +111,7 @@ class AnnotatorApp:
         self.root.geometry("1280x900")
         self.root.rowconfigure(0, weight=1)
         self.root.columnconfigure(0, weight=1)
+        self.class_name_var = tk.StringVar(master=self.root)
 
         self.build_layout()
         self.root.protocol("WM_DELETE_WINDOW", self.on_close)
@@ -133,11 +142,14 @@ class AnnotatorApp:
         self.image_status_label.grid(row=0, column=0, sticky="ew", pady=(0, 8))
 
         ttk.Label(sidebar, text="Class name").grid(row=1, column=0, sticky="w")
-        self.class_name_entry = ttk.Entry(sidebar)
-        self.class_name_entry.grid(row=2, column=0, sticky="ew", pady=(4, 8))
+        self.class_name_combobox = ttk.Combobox(sidebar, textvariable=self.class_name_var)
+        self.class_name_combobox.grid(row=2, column=0, sticky="ew", pady=(4, 8))
+        self.class_name_combobox.bind("<<ComboboxSelected>>", self.on_class_name_selected)
+        self.class_name_combobox.bind("<Return>", self.on_class_name_selected)
 
         self.annotation_listbox = tk.Listbox(sidebar, height=18)
         self.annotation_listbox.grid(row=3, column=0, sticky="nsew")
+        self.annotation_listbox.bind("<<ListboxSelect>>", self.on_annotation_selected)
 
         action_row = ttk.Frame(sidebar)
         action_row.grid(row=4, column=0, sticky="ew", pady=(8, 8))
@@ -187,6 +199,8 @@ class AnnotatorApp:
 
         relative_path = image_path.relative_to(self.dataset_dir)
         self.image_status_label.config(text=f"{image_index + 1}/{len(self.image_paths)}\n{relative_path}")
+        self.refresh_class_selector()
+        self.set_default_class_name(image_path)
         self.refresh_annotation_list()
         self.render()
 
@@ -201,6 +215,26 @@ class AnnotatorApp:
                 tk.END,
                 f"{index}. {annotation.class_name} [{x_center:.3f}, {y_center:.3f}, {width:.3f}, {height:.3f}]",
             )
+
+    def refresh_class_selector(self) -> None:
+        ordered_class_names = sorted(self.class_map, key=lambda class_name: (self.class_map[class_name], class_name))
+        self.class_name_combobox["values"] = ordered_class_names
+
+    def set_default_class_name(self, image_path: Path) -> None:
+        default_class_name = image_path.stem
+        self.class_name_var.set(default_class_name)
+
+    def on_class_name_selected(self, _event: tk.Event | None = None) -> None:
+        selected_name = self.class_name_var.get().strip()
+        if selected_name:
+            self.class_name_var.set(selected_name)
+
+    def on_annotation_selected(self, _event: tk.Event[tk.Listbox]) -> None:
+        selection = self.annotation_listbox.curselection()
+        if not selection:
+            return
+        selected_annotation = self.current_annotations[selection[0]]
+        self.class_name_var.set(selected_annotation.class_name)
 
     def render(self) -> None:
         if self.current_image is None:
@@ -297,7 +331,7 @@ class AnnotatorApp:
             return
 
         self.drag_end = self.clamp_canvas_point_to_image(event.x, event.y)
-        class_name = self.class_name_entry.get().strip()
+        class_name = self.class_name_var.get().strip()
         if not class_name:
             self.clear_drag()
             messagebox.showerror("Missing class name", "Enter a class name before drawing a box.")
@@ -312,6 +346,8 @@ class AnnotatorApp:
         self.current_annotations.append(
             Annotation(class_id=self.class_id_for_name(class_name), class_name=class_name, bbox=bbox)
         )
+        self.refresh_class_selector()
+        self.class_name_var.set(class_name)
         self.clear_drag()
         self.save_current_annotations()
 
@@ -350,8 +386,8 @@ class AnnotatorApp:
                 continue
             annotated_images.append(
                 {
-                    "image": str(image_path),
-                    "label": str(label_path),
+                    "image": portable_path(image_path, base_dir=self.project_root),
+                    "label": portable_path(label_path, base_dir=self.project_root),
                     "num_annotations": len(parse_yolo_labels(label_path)),
                 }
             )
@@ -359,11 +395,11 @@ class AnnotatorApp:
         write_json(
             self.manifest_path,
             {
-                "dataset_dir": str(self.dataset_dir),
-                "source_image_dir": str(self.source_image_dir),
-                "image_dir": str(self.annotation_image_dir),
-                "label_dir": str(self.label_dir),
-                "classes_path": str(self.classes_path),
+                "dataset_dir": portable_path(self.dataset_dir, base_dir=self.project_root),
+                "source_image_dir": portable_path(self.source_image_dir, base_dir=self.project_root),
+                "image_dir": portable_path(self.annotation_image_dir, base_dir=self.project_root),
+                "label_dir": portable_path(self.label_dir, base_dir=self.project_root),
+                "classes_path": portable_path(self.classes_path, base_dir=self.project_root),
                 "num_images": len(self.image_paths),
                 "annotated_images": annotated_images,
             },

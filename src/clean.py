@@ -1,8 +1,6 @@
 from __future__ import annotations
 
-from pathlib import Path
-
-from src.common import remove_path
+from src.common import remove_path, resolve_path
 from src.config import AppConfig
 
 
@@ -27,7 +25,5 @@ def prune_artifacts(config: AppConfig) -> None:
 
 
 def remove_local_model_file(config: AppConfig) -> None:
-    model_path = Path(config.train.model_name)
-    if not model_path.is_absolute():
-        model_path = (config.paths.project_root / model_path).resolve()
+    model_path = resolve_path(config.train.model_name, base_dir=config.paths.project_root)
     remove_path(model_path)

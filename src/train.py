@@ -25,7 +25,9 @@ from src.common import (
     non_empty_file,
     ordered_class_names,
     parse_yolo_labels,
+    portable_path,
     remove_path,
+    resolve_path,
     save_class_map,
     save_yolo_labels,
     split_items,
@@ -71,7 +73,11 @@ def train_model(
     selected_device = resolve_training_device(requested_device)
     selected_workers = resolve_training_workers(config.train.hyperparameters.workers)
 
-    selected_dataset_yaml_path = dataset_yaml_path or build_training_dataset(config)
+    selected_dataset_yaml_path = (
+        resolve_path(dataset_yaml_path, base_dir=config.paths.project_root)
+        if dataset_yaml_path is not None
+        else build_training_dataset(config)
+    )
     if not selected_dataset_yaml_path.exists():
         raise FileNotFoundError(f"Training dataset config not found: {selected_dataset_yaml_path}")
 
@@ -93,7 +99,7 @@ def train_model(
             "task": "train",
             "run_name": run_name,
             "model_name": selected_model_name,
-            "dataset_yaml_path": str(selected_dataset_yaml_path),
+            "dataset_yaml_path": portable_path(selected_dataset_yaml_path, base_dir=config.paths.project_root),
             "epochs": selected_epochs,
             "image_size": selected_image_size,
             "batch_size": selected_batch_size,
@@ -152,10 +158,10 @@ def train_model(
             {
                 "run_name": run_name,
                 "model_name": selected_model_name,
-                "run_dir": str(run_dir),
-                "dataset_yaml_path": str(selected_dataset_yaml_path),
-                "best_weights_path": str(config.paths.train_best_weights_path),
-                "latest_weights_path": str(config.paths.train_latest_weights_path),
+                "run_dir": portable_path(run_dir, base_dir=config.paths.project_root),
+                "dataset_yaml_path": portable_path(selected_dataset_yaml_path, base_dir=config.paths.project_root),
+                "best_weights_path": portable_path(config.paths.train_best_weights_path, base_dir=config.paths.project_root),
+                "latest_weights_path": portable_path(config.paths.train_latest_weights_path, base_dir=config.paths.project_root),
             },
         )
         log_training_summary(config, tracking_session, run_dir, metrics)
@@ -215,11 +221,11 @@ def build_training_dataset(config: AppConfig) -> Path:
     write_json(
         dataset_manifest_path(config.paths.train_dir),
         {
-            "dataset_dir": str(config.paths.train_dir),
-            "train_image_dir": str(train_image_dir),
-            "train_label_dir": str(train_label_dir),
-            "val_image_dir": str(val_image_dir),
-            "val_label_dir": str(val_label_dir),
+            "dataset_dir": portable_path(config.paths.train_dir, base_dir=config.paths.project_root),
+            "train_image_dir": portable_path(train_image_dir, base_dir=config.paths.project_root),
+            "train_label_dir": portable_path(train_label_dir, base_dir=config.paths.project_root),
+            "val_image_dir": portable_path(val_image_dir, base_dir=config.paths.project_root),
+            "val_label_dir": portable_path(val_label_dir, base_dir=config.paths.project_root),
             "classes": class_names,
             "num_train_images": len(train_samples),
             "num_val_images": len(val_samples),

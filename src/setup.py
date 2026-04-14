@@ -13,13 +13,19 @@ from src.common import (
     dataset_yaml_path,
     discover_images,
     ensure_dir,
+    portable_path,
+    resolve_path,
     write_json,
 )
 from src.config import AppConfig
 
 
 def prepare_dataset(config: AppConfig, archive_path: Path | None = None, force: bool = False) -> dict:
-    source_archive_path = archive_path or config.paths.raw_dir / config.fetch.archive_name
+    source_archive_path = (
+        resolve_path(archive_path, base_dir=config.paths.project_root)
+        if archive_path is not None
+        else config.paths.raw_dir / config.fetch.archive_name
+    )
     dataset_dir = config.paths.coco128_dir
     manifest_path = dataset_manifest_path(dataset_dir)
 
@@ -32,7 +38,7 @@ def prepare_dataset(config: AppConfig, archive_path: Path | None = None, force: 
         return manifest
 
     unpack_archive(source_archive_path, dataset_dir)
-    manifest = build_manifest(dataset_dir)
+    manifest = build_manifest(dataset_dir, config.paths.project_root)
     write_json(manifest_path, manifest)
     print(json.dumps(manifest, indent=2))
     return manifest
@@ -58,7 +64,7 @@ def unpack_archive(archive_path: Path, dataset_dir: Path) -> None:
         shutil.rmtree(temporary_dir)
 
 
-def build_manifest(dataset_dir: Path) -> dict:
+def build_manifest(dataset_dir: Path, project_root: Path) -> dict:
     image_dir = dataset_images_dir(dataset_dir)
     label_dir = dataset_labels_dir(dataset_dir)
     prediction_dir = dataset_predictions_dir(dataset_dir)
@@ -74,10 +80,10 @@ def build_manifest(dataset_dir: Path) -> dict:
         dataset_yaml_path(dataset_dir).write_text("", encoding="utf-8")
 
     return {
-        "dataset_dir": str(dataset_dir),
-        "image_dir": str(image_dir),
-        "label_dir": str(label_dir),
-        "prediction_dir": str(prediction_dir),
+        "dataset_dir": portable_path(dataset_dir, base_dir=project_root),
+        "image_dir": portable_path(image_dir, base_dir=project_root),
+        "label_dir": portable_path(label_dir, base_dir=project_root),
+        "prediction_dir": portable_path(prediction_dir, base_dir=project_root),
         "num_images": len(discover_images(image_dir)),
-        "dataset_yaml": str(dataset_yaml_path(dataset_dir)),
+        "dataset_yaml": portable_path(dataset_yaml_path(dataset_dir), base_dir=project_root),
     }
