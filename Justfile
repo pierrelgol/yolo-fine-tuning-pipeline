@@ -18,6 +18,9 @@ augment background_dir *args:
 visualize *args:
     uv run python cli.py visualize {{args}}
 
+show *args:
+    uv run trackio show {{args}}
+
 train *args:
     uv run python cli.py train {{args}}
 

@@ -46,6 +46,7 @@ just train
 just eval
 just infer
 just watch <video_path>
+just show
 just visualize
 ```
 
@@ -59,6 +60,7 @@ just visualize
 - `just eval`: evaluate the latest trained weights
 - `just infer`: run inference on the augmented validation split by default
 - `just watch <video_path>`: open a live video window with YOLO predictions
+- `just show`: open the Trackio UI
 - `just visualize`: inspect labels and predictions, defaulting to the latest infer target
 - `just prune`: remove train/eval/infer artifacts and predictions
 - `just clean`: remove the full generated dataset tree
