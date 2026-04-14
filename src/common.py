@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import hashlib
 import json
-import re
 import random
+import re
 import shutil
 from datetime import date
 from pathlib import Path
@@ -12,6 +12,8 @@ from typing import Iterable, Sequence
 from PIL import Image
 
 IMAGE_EXTENSIONS = {".jpg", ".jpeg", ".png", ".bmp", ".webp"}
+TRAIN_SPLIT = "train2017"
+VAL_SPLIT = "val2017"
 
 
 def ensure_dir(path: Path) -> Path:
@@ -19,23 +21,32 @@ def ensure_dir(path: Path) -> Path:
     return path
 
 
+def clear_dir(path: Path) -> Path:
+    if path.exists():
+        shutil.rmtree(path)
+    return ensure_dir(path)
+
+
+def remove_path(path: Path) -> None:
+    if not path.exists():
+        return
+    if path.is_dir():
+        shutil.rmtree(path)
+        return
+    path.unlink()
+
+
 def non_empty_file(path: Path) -> bool:
     return path.is_file() and path.stat().st_size > 0
-
-
-def write_json(path: Path, payload: dict) -> None:
-    ensure_dir(path.parent)
-    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def read_json(path: Path) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
-def stable_name(*parts: str, suffix: str) -> str:
-    joined_parts = "::".join(parts)
-    digest = hashlib.sha256(joined_parts.encode("utf-8")).hexdigest()[:16]
-    return f"{digest}{suffix}"
+def write_json(path: Path, payload: dict) -> None:
+    ensure_dir(path.parent)
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def discover_images(directory: Path) -> list[Path]:
@@ -44,62 +55,36 @@ def discover_images(directory: Path) -> list[Path]:
 
     image_paths: list[Path] = []
     for path in directory.rglob("*"):
-        if not path.is_file():
-            continue
-        if path.suffix.lower() not in IMAGE_EXTENSIONS:
-            continue
-        image_paths.append(path)
+        if path.is_file() and path.suffix.lower() in IMAGE_EXTENSIONS:
+            image_paths.append(path)
 
     image_paths.sort()
     return image_paths
 
 
-def copy_image(source_path: Path, destination_path: Path) -> None:
+def copy_file(source_path: Path, destination_path: Path) -> None:
     ensure_dir(destination_path.parent)
     shutil.copy2(source_path, destination_path)
 
 
-def split_items(items: Sequence[Path], ratio: float, seed: int) -> tuple[list[Path], list[Path]]:
+def stable_name(*parts: str, suffix: str) -> str:
+    digest = hashlib.sha256("::".join(parts).encode("utf-8")).hexdigest()[:16]
+    return f"{digest}{suffix}"
+
+
+def split_items(items: Sequence, ratio: float, seed: int) -> tuple[list, list]:
     ordered_items = list(items)
-    random_generator = random.Random(seed)
-    random_generator.shuffle(ordered_items)
-
     if len(ordered_items) <= 1:
-        return sorted(ordered_items), []
+        return ordered_items, []
 
+    random.Random(seed).shuffle(ordered_items)
     split_index = int(len(ordered_items) * ratio)
-    split_index = max(1, split_index)
-    split_index = min(len(ordered_items) - 1, split_index)
-
-    train_items = sorted(ordered_items[:split_index])
-    validation_items = sorted(ordered_items[split_index:])
-    return train_items, validation_items
-
-
-def coco_to_yolo_bbox(coco_bbox: Sequence[float], image_width: int, image_height: int) -> tuple[float, float, float, float]:
-    x_min, y_min, box_width, box_height = coco_bbox
-    x_center = (x_min + box_width / 2) / image_width
-    y_center = (y_min + box_height / 2) / image_height
-    normalized_width = box_width / image_width
-    normalized_height = box_height / image_height
-    return x_center, y_center, normalized_width, normalized_height
+    split_index = max(1, min(len(ordered_items) - 1, split_index))
+    return ordered_items[:split_index], ordered_items[split_index:]
 
 
 def clamp_bbox(values: Sequence[float]) -> tuple[float, float, float, float]:
-    clamped_values: list[float] = []
-    for value in values:
-        clamped_value = min(1.0, max(0.0, value))
-        clamped_values.append(clamped_value)
-    return tuple(clamped_values)  # type: ignore[return-value]
-
-
-def dense_category_mapping(categories: Iterable[dict]) -> dict[int, int]:
-    ordered_categories = sorted(categories, key=lambda item: int(item["id"]))
-    mapping: dict[int, int] = {}
-    for index, category in enumerate(ordered_categories):
-        category_id = int(category["id"])
-        mapping[category_id] = index
-    return mapping
+    return tuple(min(1.0, max(0.0, value)) for value in values)  # type: ignore[return-value]
 
 
 def yolo_label_line(class_id: int, bbox: Sequence[float]) -> str:
@@ -115,17 +100,6 @@ def save_yolo_labels(path: Path, lines: Sequence[str]) -> None:
     path.write_text(payload, encoding="utf-8")
 
 
-def image_size(path: Path) -> tuple[int, int]:
-    with Image.open(path) as image:
-        width, height = image.size
-    return width, height
-
-
-def image_label_path(image_path: Path, image_root: Path, label_root: Path) -> Path:
-    relative_image_path = image_path.relative_to(image_root)
-    return label_root / relative_image_path.with_suffix(".txt")
-
-
 def parse_yolo_labels(path: Path) -> list[tuple[int, tuple[float, float, float, float]]]:
     if not path.exists():
         return []
@@ -137,12 +111,11 @@ def parse_yolo_labels(path: Path) -> list[tuple[int, tuple[float, float, float, 
             continue
 
         parts = line.split()
-        if len(parts) != 5:
+        if len(parts) < 5:
             raise ValueError(f"Invalid YOLO label line in {path}: {line}")
 
         class_id = int(parts[0])
-        bbox_values = [float(value) for value in parts[1:5]]
-        bbox = clamp_bbox(bbox_values)
+        bbox = clamp_bbox([float(value) for value in parts[1:5]])
         annotations.append((class_id, bbox))
 
     return annotations
@@ -154,18 +127,12 @@ def load_class_map(path: Path) -> dict[str, int]:
 
     payload = read_json(path)
     raw_mapping = payload.get("name_to_id", payload)
-
-    class_map: dict[str, int] = {}
-    for name, class_id in raw_mapping.items():
-        class_map[str(name)] = int(class_id)
-
-    return class_map
+    return {str(name): int(class_id) for name, class_id in raw_mapping.items()}
 
 
 def save_class_map(path: Path, mapping: dict[str, int]) -> None:
     ordered_items = sorted(mapping.items(), key=lambda item: item[1])
-    ordered_mapping = {name: class_id for name, class_id in ordered_items}
-    write_json(path, {"name_to_id": ordered_mapping})
+    write_json(path, {"name_to_id": {name: class_id for name, class_id in ordered_items}})
 
 
 def ordered_class_names(class_map: dict[str, int]) -> list[str]:
@@ -173,65 +140,71 @@ def ordered_class_names(class_map: dict[str, int]) -> list[str]:
     return [class_name for class_name, _ in ordered_items]
 
 
-def sanitized_name(value: str) -> str:
-    lowercase_value = value.strip().lower()
-    normalized_value = re.sub(r"[^a-z0-9]+", "-", lowercase_value)
-    normalized_value = normalized_value.strip("-")
-    if normalized_value:
-        return normalized_value
-    return "run"
+def image_size(path: Path) -> tuple[int, int]:
+    with Image.open(path) as image:
+        return image.size
 
 
-def next_run_name(versions_path: Path, model_name: str) -> str:
-    payload: dict[str, int]
-    if versions_path.exists():
-        payload = read_json(versions_path)
-    else:
-        payload = {}
-
-    current_version = int(payload.get("next_version", 1))
-    payload["next_version"] = current_version + 1
-    write_json(versions_path, payload)
-
-    model_label = sanitized_name(Path(model_name).stem)
-    run_date = date.today().isoformat()
-    return f"{model_label}-v{current_version:03d}-{run_date}"
+def image_label_path(image_path: Path, image_root: Path, label_root: Path) -> Path:
+    return label_root / image_path.relative_to(image_root).with_suffix(".txt")
 
 
-def child_run_name(parent_run_name: str, task_name: str) -> str:
-    task_label = sanitized_name(task_name)
-    return f"{parent_run_name}-{task_label}"
+def dataset_images_dir(dataset_dir: Path, split: str = TRAIN_SPLIT) -> Path:
+    return dataset_dir / "images" / split
 
 
-def latest_train_run_name(train_dir: Path, latest_run_path: Path, fallback_name: str) -> str:
-    if latest_run_path.exists():
-        payload = read_json(latest_run_path)
-        run_name = payload.get("run_name")
-        if isinstance(run_name, str) and run_name.strip():
-            return run_name
+def dataset_labels_dir(dataset_dir: Path, split: str = TRAIN_SPLIT) -> Path:
+    return dataset_dir / "labels" / split
 
-    candidate_run_dirs: list[Path] = []
-    if train_dir.exists():
-        for child_path in train_dir.iterdir():
-            if not child_path.is_dir():
-                continue
-            if child_path.name == "data":
-                continue
-            weights_dir = child_path / "weights"
-            if not weights_dir.exists():
-                continue
-            candidate_run_dirs.append(child_path)
 
-    if candidate_run_dirs:
-        candidate_run_dirs.sort(key=lambda path: path.stat().st_mtime, reverse=True)
-        return candidate_run_dirs[0].name
+def dataset_predictions_dir(dataset_dir: Path, split: str = TRAIN_SPLIT) -> Path:
+    return dataset_dir / "predictions" / split
 
-    return fallback_name
+
+def dataset_yaml_path(dataset_dir: Path) -> Path:
+    return dataset_dir / "dataset.yaml"
+
+
+def dataset_classes_path(dataset_dir: Path) -> Path:
+    return dataset_dir / "classes.json"
+
+
+def dataset_manifest_path(dataset_dir: Path) -> Path:
+    return dataset_dir / "manifest.json"
+
+
+def write_dataset_yaml(
+    dataset_dir: Path,
+    class_names: Sequence[str],
+    train_split: str = TRAIN_SPLIT,
+    val_split: str | None = None,
+) -> Path:
+    import yaml
+
+    if val_split is None:
+        val_split = VAL_SPLIT if dataset_images_dir(dataset_dir, VAL_SPLIT).exists() else train_split
+
+    payload = {
+        "path": str(dataset_dir.resolve()),
+        "train": f"images/{train_split}",
+        "val": f"images/{val_split}",
+        "names": {index: name for index, name in enumerate(class_names)},
+    }
+    path = dataset_yaml_path(dataset_dir)
+    path.write_text(yaml.safe_dump(payload, sort_keys=False), encoding="utf-8")
+    return path
+
+
+def preferred_image_split(dataset_dir: Path) -> str:
+    if discover_images(dataset_images_dir(dataset_dir, VAL_SPLIT)):
+        return VAL_SPLIT
+    if discover_images(dataset_images_dir(dataset_dir, TRAIN_SPLIT)):
+        return TRAIN_SPLIT
+    return ""
 
 
 def resolve_dataset_directory(project_root: Path, dataset_root: Path, dataset_path: Path) -> Path:
     candidate_paths: list[Path] = []
-
     if dataset_path.is_absolute():
         candidate_paths.append(dataset_path.resolve())
     else:
@@ -243,5 +216,37 @@ def resolve_dataset_directory(project_root: Path, dataset_root: Path, dataset_pa
         if candidate_path.exists():
             return candidate_path
 
-    rendered_candidates = ", ".join(str(path) for path in candidate_paths)
-    raise FileNotFoundError(f"Dataset directory not found. Checked: {rendered_candidates}")
+    raise FileNotFoundError(
+        "Dataset directory not found. Checked: " + ", ".join(str(path) for path in candidate_paths)
+    )
+
+
+def sanitized_name(value: str) -> str:
+    normalized_value = re.sub(r"[^a-z0-9]+", "-", value.strip().lower()).strip("-")
+    return normalized_value or "run"
+
+
+def next_run_name(versions_path: Path, model_name: str) -> str:
+    payload = read_json(versions_path) if versions_path.exists() else {}
+    next_version = int(payload.get("next_version", 1))
+    write_json(versions_path, {"next_version": next_version + 1})
+    return f"{sanitized_name(Path(model_name).stem)}-v{next_version:03d}-{date.today().isoformat()}"
+
+
+def child_run_name(parent_run_name: str, task_name: str) -> str:
+    return f"{parent_run_name}-{sanitized_name(task_name)}"
+
+
+def latest_train_run_name(train_runs_dir: Path, latest_run_path: Path, fallback_name: str) -> str:
+    if latest_run_path.exists():
+        run_name = read_json(latest_run_path).get("run_name")
+        if isinstance(run_name, str) and run_name.strip():
+            return run_name
+
+    if train_runs_dir.exists():
+        run_dirs = [path for path in train_runs_dir.iterdir() if path.is_dir()]
+        if run_dirs:
+            run_dirs.sort(key=lambda path: path.stat().st_mtime, reverse=True)
+            return run_dirs[0].name
+
+    return fallback_name

@@ -29,6 +29,9 @@ eval *args:
 infer *args:
     uv run python cli.py infer {{args}}
 
+watch *args:
+    uv run python cli.py watch {{args}}
+
 prepare *args:
     uv run python cli.py prepare {{args}}
 

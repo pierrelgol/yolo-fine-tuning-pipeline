@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import csv
+import os
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -12,8 +13,12 @@ from src.config import AppConfig
 class TrackingSession:
     project_name: str
     run_name: str
-    task_name: str
-    group_name: str
+
+
+def prepare_tracking_environment(config: AppConfig) -> None:
+    os.environ.setdefault("WANDB_MODE", "disabled")
+    os.environ.setdefault("ULTRALYTICS_WANDB", "False")
+    os.environ.setdefault("TRACKIO_PROJECT", config.tracking.project_name)
 
 
 def start_tracking_run(
@@ -26,6 +31,8 @@ def start_tracking_run(
 ) -> TrackingSession | None:
     if not config.tracking.enabled:
         return None
+
+    prepare_tracking_environment(config)
 
     try:
         import trackio
@@ -43,37 +50,23 @@ def start_tracking_run(
         print(f"Trackio initialization failed: {error}")
         return None
 
-    return TrackingSession(
-        project_name=config.tracking.project_name,
-        run_name=run_name,
-        task_name=task_name,
-        group_name=group_name or task_name,
-    )
+    return TrackingSession(project_name=config.tracking.project_name, run_name=run_name)
 
 
-def log_tracking_metrics(
-    session: TrackingSession | None,
-    metrics: dict[str, Any],
-    step: int | None = None,
-) -> None:
+def log_tracking_metrics(session: TrackingSession | None, metrics: dict[str, Any], step: int | None = None) -> None:
     if session is None:
         return
 
-    filtered_metrics: dict[str, Any] = {}
-    for key, value in metrics.items():
-        if value is None:
-            continue
-        filtered_metrics[key] = normalize_tracking_value(value)
-
-    if not filtered_metrics:
+    payload = {key: normalize_tracking_value(value) for key, value in metrics.items() if value is not None}
+    if not payload:
         return
 
     try:
         import trackio
 
-        trackio.log(filtered_metrics, step=step)
+        trackio.log(payload, step=step)
     except Exception as error:
-        print(f"Trackio logging failed: {error}")
+        print(f"Trackio metric logging failed: {error}")
 
 
 def log_tracking_images(
@@ -84,25 +77,22 @@ def log_tracking_images(
     if session is None:
         return
 
-    filtered_payload: dict[str, Any] = {}
+    try:
+        import trackio
+    except Exception as error:
+        print(f"Trackio image support unavailable: {error}")
+        return
+
+    payload: dict[str, Any] = {}
     for key, (image_path, caption) in image_mapping.items():
-        if not image_path.exists():
-            continue
+        if image_path.exists():
+            payload[key] = trackio.Image(image_path, caption=caption)
 
-        try:
-            import trackio
-
-            filtered_payload[key] = trackio.Image(image_path, caption=caption)
-        except Exception as error:
-            print(f"Trackio image preparation failed for {image_path}: {error}")
-
-    if not filtered_payload:
+    if not payload:
         return
 
     try:
-        import trackio
-
-        trackio.log(filtered_payload, step=step)
+        trackio.log(payload, step=step)
     except Exception as error:
         print(f"Trackio image logging failed: {error}")
 
@@ -114,22 +104,16 @@ def log_tracking_table(
     rows: list[list[Any]],
     step: int | None = None,
 ) -> None:
-    if session is None:
-        return
-    if not rows:
+    if session is None or not rows:
         return
 
     try:
         import pandas
         import trackio
 
-        normalized_rows = []
-        for row in rows:
-            normalized_rows.append([normalize_tracking_value(value) for value in row])
-
+        normalized_rows = [[normalize_tracking_value(value) for value in row] for row in rows]
         dataframe = pandas.DataFrame(normalized_rows, columns=columns)
-        table = trackio.Table(dataframe=dataframe)
-        trackio.log({table_name: table}, step=step)
+        trackio.log({table_name: trackio.Table(dataframe=dataframe)}, step=step)
     except Exception as error:
         print(f"Trackio table logging failed: {error}")
 
@@ -140,19 +124,8 @@ def log_tracking_key_value_table(
     values: dict[str, Any],
     step: int | None = None,
 ) -> None:
-    rows: list[list[Any]] = []
-    for key, value in values.items():
-        if value is None:
-            continue
-        rows.append([key, normalize_tracking_value(value)])
-
-    log_tracking_table(
-        session=session,
-        table_name=table_name,
-        columns=["name", "value"],
-        rows=rows,
-        step=step,
-    )
+    rows = [[key, normalize_tracking_value(value)] for key, value in values.items() if value is not None]
+    log_tracking_table(session, table_name, ["name", "value"], rows, step=step)
 
 
 def log_tracking_table_from_csv(
@@ -162,9 +135,7 @@ def log_tracking_table_from_csv(
     max_rows: int,
     step: int | None = None,
 ) -> None:
-    if session is None:
-        return
-    if not csv_path.exists():
+    if session is None or not csv_path.exists():
         return
 
     with csv_path.open("r", encoding="utf-8", newline="") as file_handle:
@@ -172,51 +143,33 @@ def log_tracking_table_from_csv(
         if reader.fieldnames is None:
             return
 
-        table_rows: list[list[Any]] = []
+        rows: list[list[Any]] = []
         for row_index, row in enumerate(reader):
             if row_index >= max_rows:
                 break
+            rows.append([parse_csv_value(row.get(field_name)) for field_name in reader.fieldnames])
 
-            table_row: list[Any] = []
-            for field_name in reader.fieldnames:
-                raw_value = row.get(field_name)
-                table_row.append(normalize_tracking_value(parse_csv_value(raw_value)))
-            table_rows.append(table_row)
-
-    log_tracking_table(
-        session=session,
-        table_name=table_name,
-        columns=[field_name.strip() for field_name in reader.fieldnames],
-        rows=table_rows,
-        step=step,
-    )
+    log_tracking_table(session, table_name, list(reader.fieldnames), rows, step=step)
 
 
-def save_tracking_artifacts(
-    session: TrackingSession | None,
-    artifact_paths: list[Path],
-) -> None:
+def save_tracking_artifacts(session: TrackingSession | None, artifact_paths: list[Path]) -> None:
     if session is None:
         return
 
-    existing_artifact_paths = [path for path in artifact_paths if path.exists()]
-    if not existing_artifact_paths:
+    existing_paths = [path for path in artifact_paths if path.exists()]
+    if not existing_paths:
         return
 
     try:
         import trackio
 
-        for artifact_path in existing_artifact_paths:
+        for artifact_path in existing_paths:
             trackio.save(artifact_path, project=session.project_name)
     except Exception as error:
         print(f"Trackio artifact save failed: {error}")
 
 
-def alert_tracking_failure(
-    session: TrackingSession | None,
-    title: str,
-    message: str,
-) -> None:
+def alert_tracking_failure(session: TrackingSession | None, title: str, message: str) -> None:
     if session is None:
         return
 
@@ -246,7 +199,7 @@ def parse_csv_value(raw_value: str | None) -> Any:
         return None
 
     stripped_value = raw_value.strip()
-    if stripped_value == "":
+    if not stripped_value:
         return None
 
     try:
@@ -270,16 +223,10 @@ def normalize_tracking_value(value: Any) -> Any:
         except Exception:
             return str(value)
 
-    if isinstance(value, list):
-        return [normalize_tracking_value(item) for item in value]
-
-    if isinstance(value, tuple):
-        return [normalize_tracking_value(item) for item in value]
-
     if isinstance(value, dict):
-        normalized_mapping: dict[str, Any] = {}
-        for key, item in value.items():
-            normalized_mapping[str(key)] = normalize_tracking_value(item)
-        return normalized_mapping
+        return {str(key): normalize_tracking_value(item) for key, item in value.items()}
+
+    if isinstance(value, (list, tuple)):
+        return [normalize_tracking_value(item) for item in value]
 
     return str(value)

@@ -13,6 +13,7 @@ from src.infer import run_inference
 from src.setup import prepare_dataset
 from src.train import train_model
 from src.visualize import launch_visualizer
+from src.watch import watch_video
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -57,6 +58,12 @@ def build_parser() -> argparse.ArgumentParser:
     infer_parser.add_argument("dataset_dir", nargs="?", type=Path)
     infer_parser.add_argument("--weights", type=Path)
     infer_parser.add_argument("--force", action="store_true")
+
+    watch_parser = subparsers.add_parser("watch", help="Run live inference on a video")
+    watch_parser.add_argument("source", nargs="?")
+    watch_parser.add_argument("--weights", type=Path)
+    watch_parser.add_argument("--conf", type=float)
+    watch_parser.add_argument("--imgsz", type=int)
 
     prepare_parser = subparsers.add_parser("prepare", help="Run fetch and setup in sequence")
     prepare_parser.add_argument("--url")
@@ -137,6 +144,16 @@ def main() -> None:
     if args.command == "prepare":
         fetch_dataset(config, dataset_url=args.url, archive_name=args.filename)
         prepare_dataset(config, archive_path=args.archive, force=args.force)
+        return
+
+    if args.command == "watch":
+        watch_video(
+            config,
+            source=args.source,
+            weights_path=args.weights,
+            confidence=args.conf,
+            image_size=args.imgsz,
+        )
         return
 
     if args.command == "clean":

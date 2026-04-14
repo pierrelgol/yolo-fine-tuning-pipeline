@@ -7,6 +7,7 @@
     }
   ],
   "classes_path": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\classes.json",
+  "dataset_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation",
   "image_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\images\\train2017",
   "label_dir": "C:\\Users\\pollivier\\workspace\\yolo-fine-tuning-pipeline\\dataset\\annotation\\labels\\train2017",
   "num_images": 1,

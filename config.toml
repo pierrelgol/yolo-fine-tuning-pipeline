@@ -13,13 +13,13 @@ random_seed = 42
 [train]
 model_name = "yolo26n.pt"
 image_size = 640
-epochs = 10
+epochs = 32
 batch_size = 8
 device = "auto"
 
 [train.hyperparameters]
 patience = 100
-optimizer = "auto"
+optimizer = "AdamW"
 initial_learning_rate = 0.01
 final_learning_rate_factor = 0.01
 momentum = 0.937
@@ -48,6 +48,12 @@ dataset_yaml = "dataset/train/dataset.yaml"
 
 [infer]
 dataset_name = "augmented"
+
+[watch]
+source = ""
+confidence = 0.25
+image_size = 640
+window_name = "YOLO Watch"
 
 [tracking]
 enabled = true
