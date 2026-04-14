@@ -17,8 +17,8 @@ annotate *args:
 augment background_dir *args:
     uv run python cli.py augment {{background_dir}} {{args}}
 
-visualize dataset_dir *args:
-    uv run python cli.py visualize {{dataset_dir}} {{args}}
+visualize *args:
+    uv run python cli.py visualize {{args}}
 
 train *args:
     uv run python cli.py train {{args}}

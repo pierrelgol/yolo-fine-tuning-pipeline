@@ -21,21 +21,41 @@ class OverlayAnnotation:
 
 def launch_visualizer(
     config: AppConfig,
-    dataset_subdir: Path,
+    dataset_subdir: Path | None = None,
     show_labels: bool = True,
     show_predictions: bool = True,
 ) -> None:
-    dataset_dir = resolve_dataset_directory(
-        project_root=config.paths.project_root,
-        dataset_root=config.paths.dataset_dir,
-        dataset_path=dataset_subdir,
-    )
+    dataset_dir = resolve_visualizer_dataset_dir(config, dataset_subdir)
     app = VisualizerApp(
         dataset_dir=dataset_dir,
         show_labels=show_labels,
         show_predictions=show_predictions,
     )
     app.run()
+
+
+def resolve_visualizer_dataset_dir(config: AppConfig, dataset_subdir: Path | None) -> Path:
+    if dataset_subdir is not None:
+        return resolve_dataset_directory(
+            project_root=config.paths.project_root,
+            dataset_root=config.paths.dataset_dir,
+            dataset_path=dataset_subdir,
+        )
+
+    latest_manifest_path = config.paths.infer_latest_manifest_path
+    if latest_manifest_path.exists():
+        manifest = read_json(latest_manifest_path)
+        dataset_dir_value = manifest.get("dataset_dir")
+        if isinstance(dataset_dir_value, str) and dataset_dir_value.strip():
+            dataset_dir = Path(dataset_dir_value).resolve()
+            if dataset_dir.exists():
+                return dataset_dir
+
+    return resolve_dataset_directory(
+        project_root=config.paths.project_root,
+        dataset_root=config.paths.dataset_dir,
+        dataset_path=Path(config.infer.dataset_name),
+    )
 
 
 class VisualizerApp:

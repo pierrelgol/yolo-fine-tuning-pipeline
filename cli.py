@@ -68,7 +68,7 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("prune", help="Remove train, eval, infer, and prediction outputs")
 
     visualize_parser = subparsers.add_parser("visualize", help="Open the dataset visualizer")
-    visualize_parser.add_argument("dataset_dir", type=Path)
+    visualize_parser.add_argument("dataset_dir", nargs="?", type=Path)
     visualize_parser.add_argument("--hide-labels", action="store_true")
     visualize_parser.add_argument("--hide-predictions", action="store_true")
 
