@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import json
+import math
+import random
 from dataclasses import dataclass
 from pathlib import Path
 
+import cv2
+import numpy as np
 from PIL import Image
 from tqdm import tqdm
 
@@ -39,10 +43,14 @@ class SourceAnnotation:
     bbox: tuple[float, float, float, float]
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=False)
 class PlannedSample:
     annotation: SourceAnnotation
     background_path: Path
+    complexity_offset: float = 0.0
+
+
+PHI = (1 + math.sqrt(5)) / 2
 
 
 def augment_with_annotations(
@@ -52,6 +60,7 @@ def augment_with_annotations(
     label_dir: Path | None = None,
     classes_path: Path | None = None,
     output_dir: Path | None = None,
+    curriculum_complexity: float = 0.0,
 ) -> dict:
     source_dataset_dir = config.paths.annotation_dir
     resolved_background_dir = resolve_path(
@@ -114,6 +123,14 @@ def augment_with_annotations(
     train_samples, val_samples = split_items(
         planned_samples, config.setup.train_split, config.setup.random_seed
     )
+
+    # Apply curriculum complexity: higher complexity for later samples
+    if len(train_samples) > 0:
+        total_train = len(train_samples)
+        for i, sample in enumerate(train_samples):
+            # Complexity increases from 0.0 to 1.0 across the training set
+            sample.complexity_offset = (i / total_train) * curriculum_complexity
+
     train_samples = sorted(train_samples, key=planned_sample_sort_key)
     val_samples = sorted(val_samples, key=planned_sample_sort_key)
 
@@ -171,9 +188,7 @@ def collect_source_annotations(
                 SourceAnnotation(
                     image_path=image_path,
                     class_id=class_id,
-                    class_name=class_name_by_id.get(
-                        class_id, f"class_{class_id}"
-                    ),
+                    class_name=class_name_by_id.get(class_id, f"class_{class_id}"),
                     bbox=bbox,
                 )
             )
@@ -199,30 +214,27 @@ def write_samples(
 ) -> list[dict]:
     generated_samples: list[dict] = []
     progress_label = f"augment:{image_dir.parent.name}"
-    for planned_sample in tqdm(
-        planned_samples, desc=progress_label, unit="sample"
-    ):
+    for planned_sample in tqdm(planned_samples, desc=progress_label, unit="sample"):
         output_image_path, output_label_path = create_augmented_sample(
             annotation=planned_sample.annotation,
             background_path=planned_sample.background_path,
             output_image_dir=image_dir,
             output_label_dir=label_dir,
+            complexity_offset=planned_sample.complexity_offset,
         )
-        generated_samples.append({
-            "background": portable_path(
-                planned_sample.background_path, base_dir=project_root
-            ),
-            "source_image": portable_path(
-                planned_sample.annotation.image_path, base_dir=project_root
-            ),
-            "output_image": portable_path(
-                output_image_path, base_dir=project_root
-            ),
-            "output_label": portable_path(
-                output_label_path, base_dir=project_root
-            ),
-            "class_name": planned_sample.annotation.class_name,
-        })
+        generated_samples.append(
+            {
+                "background": portable_path(
+                    planned_sample.background_path, base_dir=project_root
+                ),
+                "source_image": portable_path(
+                    planned_sample.annotation.image_path, base_dir=project_root
+                ),
+                "output_image": portable_path(output_image_path, base_dir=project_root),
+                "output_label": portable_path(output_label_path, base_dir=project_root),
+                "class_name": planned_sample.annotation.class_name,
+            }
+        )
     return generated_samples
 
 
@@ -231,21 +243,8 @@ def create_augmented_sample(
     background_path: Path,
     output_image_dir: Path,
     output_label_dir: Path,
+    complexity_offset: float = 0.0,
 ) -> tuple[Path, Path]:
-    foreground = crop_foreground(annotation)
-    with Image.open(background_path) as opened_background:
-        background = opened_background.convert("RGBA")
-
-    background_width, background_height = background.size
-    resized_width, resized_height = resize_foreground(
-        foreground.size, background.size
-    )
-    resized_foreground = foreground.resize((resized_width, resized_height))
-
-    x_offset = (background_width - resized_width) // 2
-    y_offset = (background_height - resized_height) // 2
-    background.alpha_composite(resized_foreground, (x_offset, y_offset))
-
     bbox_key = ",".join(f"{value:.6f}" for value in annotation.bbox)
     sample_name = stable_name(
         background_path.as_posix(),
@@ -254,17 +253,24 @@ def create_augmented_sample(
         bbox_key,
         suffix="",
     )
+    seed = int(sample_name, 16)
+
+    foreground = crop_foreground(annotation)
+    with Image.open(background_path) as opened_background:
+        background = opened_background.convert("RGB")
+
+    composite_image, output_bbox = compose_foreground_with_context(
+        foreground=foreground,
+        background=background,
+        class_id=annotation.class_id,
+        seed=seed,
+        complexity_offset=complexity_offset,
+    )
 
     output_image_path = image_dir_path(output_image_dir, sample_name)
     output_label_path = label_dir_path(output_label_dir, sample_name)
-    background.convert("RGB").save(output_image_path, quality=95)
+    composite_image.save(output_image_path, quality=95)
 
-    output_bbox = (
-        (x_offset + resized_width / 2) / background_width,
-        (y_offset + resized_height / 2) / background_height,
-        resized_width / background_width,
-        resized_height / background_height,
-    )
     save_yolo_labels(
         output_label_path, [yolo_label_line(annotation.class_id, output_bbox)]
     )
@@ -294,9 +300,321 @@ def resize_foreground(
     width_scale = max_width / max(1, foreground_width)
     height_scale = max_height / max(1, foreground_height)
     scale = min(width_scale, height_scale, 1.0)
-    return max(1, int(foreground_width * scale)), max(
-        1, int(foreground_height * scale)
+    return max(1, int(foreground_width * scale)), max(1, int(foreground_height * scale))
+
+
+def compose_foreground_with_context(
+    foreground: Image.Image,
+    background: Image.Image,
+    class_id: int,
+    seed: int,
+    complexity_offset: float = 0.0,
+) -> tuple[Image.Image, tuple[float, float, float, float]]:
+    rng = random.Random(seed)
+    np_rng = np.random.default_rng(seed)
+
+    foreground_rgba = np.array(foreground.convert("RGBA"))
+    background_rgb = cv2.cvtColor(
+        np.array(background.convert("RGB")), cv2.COLOR_RGB2BGR
     )
+
+    resized_foreground = resize_foreground_for_context(
+        foreground_rgba, background_rgb.shape[:2], np_rng
+    )
+
+    warped_rgb, warped_alpha = warp_foreground(
+        resized_foreground,
+        class_id=class_id,
+        rng=rng,
+        complexity_offset=complexity_offset,
+    )
+    composite_bgr, output_bbox = place_warped_foreground(
+        background_rgb, warped_rgb, warped_alpha, rng=rng
+    )
+
+    composite_rgb = cv2.cvtColor(composite_bgr, cv2.COLOR_BGR2RGB)
+    return Image.fromarray(composite_rgb), output_bbox
+
+
+def resize_foreground_for_context(
+    foreground_rgba: np.ndarray,
+    background_shape: tuple[int, int],
+    np_rng: np.random.Generator,
+) -> np.ndarray:
+    foreground_height, foreground_width = foreground_rgba.shape[:2]
+    background_height, background_width = background_shape
+    foreground_area = max(1, foreground_height * foreground_width)
+    background_area = max(1, background_height * background_width)
+
+    placement_roll = np_rng.random()
+    if placement_roll < 0.8:
+        target_ratio = np_rng.uniform(0.25, 0.30)
+    elif placement_roll < 0.9:
+        target_ratio = np_rng.uniform(0.08, 0.095)
+    else:
+        target_ratio = np_rng.uniform(0.40, 0.50)
+
+    scale = math.sqrt((target_ratio * background_area) / foreground_area)
+    resized_width = max(1, int(round(foreground_width * scale)))
+    resized_height = max(1, int(round(foreground_height * scale)))
+    return cv2.resize(
+        foreground_rgba,
+        (resized_width, resized_height),
+        interpolation=cv2.INTER_AREA,
+    )
+
+
+def warp_foreground(
+    foreground_rgba: np.ndarray,
+    class_id: int,
+    rng: random.Random,
+    complexity_offset: float = 0.0,
+) -> tuple[np.ndarray, np.ndarray]:
+    rgb = cv2.cvtColor(foreground_rgba[:, :, :3], cv2.COLOR_RGBA2BGR)
+    alpha = foreground_rgba[:, :, 3]
+    height, width = alpha.shape
+
+    yaw_deg, pitch_deg = choose_yaw_and_pitch_deg(class_id, rng)
+    # Amplify transformations based on complexity_offset
+    yaw_deg *= 1.0 + complexity_offset
+    pitch_deg *= 1.0 + complexity_offset
+
+    homography = homography_from_yaw_pitch(
+        width, height, yaw_deg=yaw_deg, pitch_deg=pitch_deg, f=1000.0
+    )
+    warped_rgb, translated_homography = warp_perspective_full(rgb, homography)
+    warped_alpha = cv2.warpPerspective(
+        alpha,
+        translated_homography,
+        (warped_rgb.shape[1], warped_rgb.shape[0]),
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_CONSTANT,
+        borderValue=0,
+    )
+    return warped_rgb, warped_alpha
+
+
+def place_warped_foreground(
+    background_bgr: np.ndarray,
+    warped_rgb: np.ndarray,
+    warped_alpha: np.ndarray,
+    rng: random.Random,
+) -> tuple[np.ndarray, tuple[float, float, float, float]]:
+    background_height, background_width = background_bgr.shape[:2]
+    warped_rgb, warped_alpha = fit_warped_foreground_to_background(
+        warped_rgb,
+        warped_alpha,
+        background_size=(background_width, background_height),
+    )
+    warped_height, warped_width = warped_rgb.shape[:2]
+    if warped_height == 0 or warped_width == 0:
+        raise ValueError("Warped foreground is empty")
+
+    max_x = max(0, background_width - warped_width)
+    max_y = max(0, background_height - warped_height)
+    x_offset = rng.randint(0, max_x) if max_x > 0 else 0
+    y_offset = rng.randint(0, max_y) if max_y > 0 else 0
+
+    alpha_mask = warped_alpha.astype(np.float32) / 255.0
+    alpha_mask = alpha_mask[:, :, None]
+
+    composite = background_bgr.copy()
+    target_roi = composite[
+        y_offset : y_offset + warped_height,
+        x_offset : x_offset + warped_width,
+    ]
+    blended_roi = (
+        target_roi.astype(np.float32) * (1.0 - alpha_mask)
+        + warped_rgb.astype(np.float32) * alpha_mask
+    )
+    composite[
+        y_offset : y_offset + warped_height,
+        x_offset : x_offset + warped_width,
+    ] = np.clip(blended_roi, 0, 255).astype(np.uint8)
+
+    output_bbox = bbox_from_alpha(
+        warped_alpha,
+        x_offset=x_offset,
+        y_offset=y_offset,
+        background_size=(background_width, background_height),
+    )
+    return composite, output_bbox
+
+
+def fit_warped_foreground_to_background(
+    warped_rgb: np.ndarray,
+    warped_alpha: np.ndarray,
+    background_size: tuple[int, int],
+) -> tuple[np.ndarray, np.ndarray]:
+    background_width, background_height = background_size
+    warped_height, warped_width = warped_rgb.shape[:2]
+
+    if warped_width <= background_width and warped_height <= background_height:
+        return warped_rgb, warped_alpha
+
+    width_scale = background_width / max(1, warped_width)
+    height_scale = background_height / max(1, warped_height)
+    scale = min(width_scale, height_scale, 1.0)
+    resized_width = max(1, int(math.floor(warped_width * scale)))
+    resized_height = max(1, int(math.floor(warped_height * scale)))
+
+    resized_rgb = cv2.resize(
+        warped_rgb,
+        (resized_width, resized_height),
+        interpolation=cv2.INTER_AREA,
+    )
+    resized_alpha = cv2.resize(
+        warped_alpha,
+        (resized_width, resized_height),
+        interpolation=cv2.INTER_LINEAR,
+    )
+    return resized_rgb, resized_alpha
+
+
+def bbox_from_alpha(
+    alpha: np.ndarray,
+    x_offset: int,
+    y_offset: int,
+    background_size: tuple[int, int],
+) -> tuple[float, float, float, float]:
+    background_width, background_height = background_size
+    ys, xs = np.where(alpha > 0)
+    if len(xs) == 0 or len(ys) == 0:
+        raise ValueError("Foreground alpha mask is empty after warping")
+
+    x_min = int(xs.min()) + x_offset
+    y_min = int(ys.min()) + y_offset
+    x_max = int(xs.max()) + x_offset
+    y_max = int(ys.max()) + y_offset
+
+    width = max(1, x_max - x_min + 1)
+    height = max(1, y_max - y_min + 1)
+    x_center = x_min + width / 2
+    y_center = y_min + height / 2
+    return (
+        x_center / background_width,
+        y_center / background_height,
+        width / background_width,
+        height / background_height,
+    )
+
+
+def choose_yaw_and_pitch_deg(class_id: int, rng: random.Random) -> tuple[float, float]:
+    probability = rng.random()
+
+    if class_id == 0:
+        if probability < 0.1:
+            yaw_deg = rng.uniform(-5.0, 5.0)
+            pitch_deg = rng.uniform(-3.0, 3.0)
+        elif probability < 0.35:
+            yaw_deg = rng.uniform(35.0, 55.0)
+            pitch_deg = rng.uniform(-15.0, 15.0)
+        else:
+            yaw_deg = rng.uniform(-55.0, 35.0)
+            pitch_deg = rng.uniform(-15.0, 15.0)
+        return yaw_deg, pitch_deg
+
+    if class_id == 1:
+        if probability < 0.5:
+            pitch_deg = rng.uniform(-80.0, -65.0)
+            yaw_deg = rng.uniform(-8.0, 8.0)
+        else:
+            pitch_deg = rng.uniform(-75.0, -60.0)
+            yaw_deg = rng.uniform(-20.0, 20.0)
+            yaw_deg *= pitch_deg / 70.0
+        return yaw_deg, pitch_deg
+
+    yaw_range = 12.0 / PHI
+    pitch_range = 10.0 / PHI
+    return (
+        rng.uniform(-yaw_range, yaw_range),
+        rng.uniform(-pitch_range, pitch_range),
+    )
+
+
+def homography_from_yaw_pitch(
+    width: int,
+    height: int,
+    yaw_deg: float,
+    pitch_deg: float,
+    f: float,
+) -> np.ndarray:
+    yaw = np.deg2rad(yaw_deg)
+    pitch = np.deg2rad(pitch_deg)
+
+    rotation_yaw = np.array(
+        [
+            [np.cos(yaw), 0.0, np.sin(yaw)],
+            [0.0, 1.0, 0.0],
+            [-np.sin(yaw), 0.0, np.cos(yaw)],
+        ],
+        dtype=np.float32,
+    )
+    rotation_pitch = np.array(
+        [
+            [1.0, 0.0, 0.0],
+            [0.0, np.cos(pitch), -np.sin(pitch)],
+            [0.0, np.sin(pitch), np.cos(pitch)],
+        ],
+        dtype=np.float32,
+    )
+    rotation = rotation_pitch @ rotation_yaw
+
+    cx = width / 2.0
+    cy = height / 2.0
+    source_points = np.array(
+        [[0.0, 0.0], [width, 0.0], [width, height], [0.0, height]],
+        dtype=np.float32,
+    )
+    plane_points = np.array(
+        [[-cx, -cy, 0.0], [cx, -cy, 0.0], [cx, cy, 0.0], [-cx, cy, 0.0]],
+        dtype=np.float32,
+    )
+
+    projected_points: list[list[float]] = []
+    for point in plane_points:
+        rotated = rotation @ point
+        z_depth = f + rotated[2]
+        projected_points.append(
+            [
+                float(f * rotated[0] / z_depth + cx),
+                float(f * rotated[1] / z_depth + cy),
+            ]
+        )
+
+    return cv2.getPerspectiveTransform(
+        source_points, np.array(projected_points, dtype=np.float32)
+    )
+
+
+def warp_perspective_full(
+    image: np.ndarray, homography: np.ndarray
+) -> tuple[np.ndarray, np.ndarray]:
+    height, width = image.shape[:2]
+    corners = np.array(
+        [[0.0, 0.0], [width, 0.0], [width, height], [0.0, height]],
+        dtype=np.float32,
+    )
+    warped_corners = cv2.perspectiveTransform(corners[None, :, :], homography)[0]
+
+    x_min, y_min = warped_corners.min(axis=0)
+    x_max, y_max = warped_corners.max(axis=0)
+    translation = np.array(
+        [[1.0, 0.0, -x_min], [0.0, 1.0, -y_min], [0.0, 0.0, 1.0]],
+        dtype=np.float32,
+    )
+    translated_homography = translation @ homography
+
+    warped_width = max(1, int(math.ceil(x_max - x_min)))
+    warped_height = max(1, int(math.ceil(y_max - y_min)))
+    warped_image = cv2.warpPerspective(
+        image,
+        translated_homography,
+        (warped_width, warped_height),
+        flags=cv2.INTER_LINEAR,
+        borderMode=cv2.BORDER_TRANSPARENT,
+    )
+    return warped_image, translated_homography
 
 
 def image_dir_path(image_dir: Path, sample_name: str) -> Path:
