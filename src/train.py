@@ -8,6 +8,12 @@ from typing import Any
 
 import torch
 from ultralytics import YOLO
+from ultralytics.cfg import get_cfg
+from ultralytics.models.yolo.detect.train import DetectionTrainer
+from ultralytics.nn.tasks import load_checkpoint
+from ultralytics.utils import LOGGER
+from ultralytics.utils.checks import check_file
+from ultralytics.utils.files import get_latest_run
 
 from src.common import (
     TRAIN_SPLIT,
@@ -55,13 +61,84 @@ class DatasetSample:
 
 
 @dataclass(frozen=True)
-class CurriculumPhase:
+class CurriculumEpoch:
     stage_index: int
-    phase_name: str
+    epoch_index: int
     difficulty: float
     epochs: int
     train_kwargs: dict[str, Any]
     augmentations: list[Any]
+
+
+CURRICULUM_RESUME_KEYS = {
+    "hsv_h",
+    "hsv_s",
+    "hsv_v",
+    "degrees",
+    "translate",
+    "scale",
+    "shear",
+    "perspective",
+    "flipud",
+    "fliplr",
+    "bgr",
+    "mosaic",
+    "mixup",
+    "cutmix",
+    "copy_paste",
+    "augmentations",
+}
+
+
+class CurriculumDetectionTrainer(DetectionTrainer):
+    def check_resume(self, overrides):
+        resume = self.args.resume
+        if resume:
+            try:
+                exists = isinstance(resume, (str, Path)) and Path(resume).exists()
+                last = Path(check_file(resume) if exists else get_latest_run())
+                ckpt_args = load_checkpoint(last)[0].args
+                if not isinstance(ckpt_args["data"], dict) and not Path(
+                    ckpt_args["data"]
+                ).exists():
+                    ckpt_args["data"] = self.args.data
+
+                resume = True
+                self.args = get_cfg(ckpt_args)
+                self.args.model = self.args.resume = str(last)
+                for key in (
+                    "imgsz",
+                    "batch",
+                    "device",
+                    "close_mosaic",
+                    "save_period",
+                    "workers",
+                    "cache",
+                    "patience",
+                    "time",
+                    "freeze",
+                    "val",
+                    "plots",
+                    "epochs",
+                    *CURRICULUM_RESUME_KEYS,
+                ):
+                    if key in overrides:
+                        setattr(self.args, key, overrides[key])
+
+                if (
+                    ckpt_args.get("augmentations") is not None
+                    and "augmentations" not in overrides
+                ):
+                    LOGGER.warning(
+                        "Custom Albumentations transforms were used in the original training run but are not "
+                        "being restored. Pass 'augmentations' when resuming to preserve expected results."
+                    )
+            except Exception as error:
+                raise FileNotFoundError(
+                    "Resume checkpoint not found. Please pass a valid checkpoint to resume from, "
+                    "i.e. 'yolo train resume model=path/to/last.pt'"
+                ) from error
+        self.resume = resume
 
 
 def train_model(
@@ -76,7 +153,7 @@ def train_model(
 ) -> Path:
     selected_model_name = model_name or config.train.model_name
     selected_epochs = (
-        config.train.curriculum.main_epochs_per_stage
+        config.train.curriculum.epochs_per_stage
         if epochs is None
         else epochs
     )
@@ -131,7 +208,7 @@ def train_model(
             "dataset_yaml_path": portable_path(
                 selected_dataset_yaml_path, base_dir=config.paths.project_root
             ),
-            "main_epochs_per_stage": selected_epochs,
+            "epochs_per_stage": selected_epochs,
             "curriculum_stages": config.train.curriculum.stages,
             "image_size": selected_image_size,
             "batch_size": selected_batch_size,
@@ -143,48 +220,49 @@ def train_model(
     )
 
     try:
-        curriculum_phases = build_curriculum_phases(
+        curriculum_epochs = build_curriculum_epochs(
             config.train.curriculum,
-            main_epochs_per_stage=selected_epochs,
+            epochs_per_stage=selected_epochs,
         )
-        phase_runs: list[dict[str, Any]] = []
-        current_model_name = selected_model_name
+        curriculum_epoch_runs: list[dict[str, Any]] = []
+        current_checkpoint_path: Path | None = None
         training_results = None
-        final_phase_run_dir = run_dir
+        completed_epochs = 0
 
-        for phase_number, phase in enumerate(curriculum_phases, start=1):
-            phase_run_name = (
-                f"{run_name}-s{phase.stage_index + 1:02d}-{phase.phase_name}"
-            )
-            phase_run_dir = config.paths.train_runs_dir / phase_run_name
+        for epoch_number, curriculum_epoch in enumerate(
+            curriculum_epochs, start=1
+        ):
+            completed_epochs += curriculum_epoch.epochs
+            resume_path = current_checkpoint_path
             print(
-                f"Curriculum phase {phase_number}/{len(curriculum_phases)}: "
-                f"stage={phase.stage_index + 1}, phase={phase.phase_name}, "
-                f"difficulty={phase.difficulty:.3f}, epochs={phase.epochs}"
+                f"Curriculum epoch {epoch_number}/{len(curriculum_epochs)}: "
+                f"stage={curriculum_epoch.stage_index + 1}, "
+                f"difficulty={curriculum_epoch.difficulty:.6f}, "
+                f"target_total_epochs={completed_epochs}"
             )
-            print(f"  Ultralytics kwargs: {phase.train_kwargs}")
+            print(f"  Ultralytics kwargs: {curriculum_epoch.train_kwargs}")
             print(
                 "  Albumentations: "
                 + ", ".join(
-                    str(transform) for transform in phase.augmentations
+                    str(transform) for transform in curriculum_epoch.augmentations
                 )
             )
 
-            model = YOLO(current_model_name)
+            model = YOLO(str(resume_path) if resume_path else selected_model_name)
             register_training_callbacks(
                 model, tracking_session, config.tracking.log_every_n_steps
             )
-            training_results = model.train(
+            train_kwargs = dict(
                 data=str(selected_dataset_yaml_path),
-                epochs=phase.epochs,
+                epochs=completed_epochs,
                 imgsz=selected_image_size,
-                batch=selected_batch_size,
                 device=selected_device,
                 project=str(config.paths.train_runs_dir),
-                name=phase_run_name,
+                name=run_name,
                 exist_ok=force,
                 plots=True,
                 save=True,
+                resume=str(resume_path) if resume_path else False,
                 patience=config.train.hyperparameters.patience,
                 optimizer=config.train.hyperparameters.optimizer,
                 lr0=config.train.hyperparameters.initial_learning_rate,
@@ -193,7 +271,7 @@ def train_model(
                 weight_decay=config.train.hyperparameters.weight_decay,
                 warmup_epochs=min(
                     config.train.hyperparameters.warmup_epochs,
-                    float(phase.epochs),
+                    float(curriculum_epoch.epochs),
                 ),
                 box=config.train.hyperparameters.box_loss_gain,
                 cls=config.train.hyperparameters.class_loss_gain,
@@ -203,30 +281,45 @@ def train_model(
                 auto_augment=config.train.hyperparameters.auto_augment,
                 erasing=config.train.hyperparameters.erasing,
                 workers=selected_workers,
-                **phase.train_kwargs,
-                augmentations=phase.augmentations,
+                **curriculum_epoch.train_kwargs,
+                augmentations=curriculum_epoch.augmentations,
             )
-            current_model_name = str(phase_run_dir / "weights" / "last.pt")
-            final_phase_run_dir = phase_run_dir
-            phase_runs.append(
+            if not resume_path or selected_batch_size >= 1:
+                train_kwargs["batch"] = selected_batch_size
+            training_results = model.train(
+                trainer=CurriculumDetectionTrainer,
+                **train_kwargs,
+            )
+            current_checkpoint_path = run_dir / "weights" / "last.pt"
+            if not current_checkpoint_path.exists():
+                raise FileNotFoundError(
+                    f"Expected epoch checkpoint not found: {current_checkpoint_path}"
+                )
+            curriculum_epoch_runs.append(
                 {
-                    "stage": phase.stage_index + 1,
-                    "phase": phase.phase_name,
-                    "difficulty": phase.difficulty,
-                    "epochs": phase.epochs,
-                    "run_name": phase_run_name,
+                    "stage": curriculum_epoch.stage_index + 1,
+                    "epoch_index": curriculum_epoch.epoch_index,
+                    "difficulty": curriculum_epoch.difficulty,
+                    "epochs": curriculum_epoch.epochs,
+                    "target_total_epochs": completed_epochs,
+                    "resume_from": portable_path(
+                        resume_path, base_dir=config.paths.project_root
+                    )
+                    if resume_path
+                    else None,
+                    "run_name": run_name,
                     "run_dir": portable_path(
-                        phase_run_dir, base_dir=config.paths.project_root
+                        run_dir, base_dir=config.paths.project_root
                     ),
-                    "kwargs": phase.train_kwargs,
+                    "kwargs": curriculum_epoch.train_kwargs,
                     "augmentations": [
-                        str(transform) for transform in phase.augmentations
+                        str(transform) for transform in curriculum_epoch.augmentations
                     ],
                 }
             )
 
         metrics = dict(getattr(training_results, "results_dict", {}) or {})
-        write_training_outputs(config, final_phase_run_dir, run_dir, metrics)
+        write_training_outputs(config, run_dir, run_dir, metrics)
         write_json(
             config.paths.train_latest_run_path,
             {
@@ -247,12 +340,10 @@ def train_model(
                     config.paths.train_latest_weights_path,
                     base_dir=config.paths.project_root,
                 ),
-                "curriculum_phases": phase_runs,
+                "curriculum_epochs": curriculum_epoch_runs,
             },
         )
-        log_training_summary(
-            config, tracking_session, final_phase_run_dir, metrics
-        )
+        log_training_summary(config, tracking_session, run_dir, metrics)
 
         print(f"Training dataset: {config.paths.train_dir}")
         print(f"Best weights: {config.paths.train_best_weights_path}")
@@ -521,34 +612,33 @@ def log_training_summary(
     )
 
 
-def build_curriculum_phases(
+def build_curriculum_epochs(
     curriculum: CurriculumConfig,
-    main_epochs_per_stage: int,
-) -> list[CurriculumPhase]:
-    phases: list[CurriculumPhase] = []
+    epochs_per_stage: int,
+) -> list[CurriculumEpoch]:
+    curriculum_epochs: list[CurriculumEpoch] = []
     stages = max(1, curriculum.stages)
-    main_epochs = max(0, main_epochs_per_stage)
-    for stage_index in range(stages):
-        stage_difficulty = stage_index / (stages - 1) if stages > 1 else 0.0
-        for phase_name, difficulty, epochs in [
-            ("easy", 0.0, 1),
-            ("current", stage_difficulty, main_epochs),
-            ("hard", 1.0, 1),
-        ]:
-            if epochs <= 0:
-                continue
-            train_kwargs = curriculum_train_kwargs(curriculum, difficulty)
-            phases.append(
-                CurriculumPhase(
-                    stage_index=stage_index,
-                    phase_name=phase_name,
-                    difficulty=difficulty,
-                    epochs=epochs,
-                    train_kwargs=train_kwargs,
-                    augmentations=build_albumentations(curriculum, difficulty),
-                )
+    stage_epochs = max(0, epochs_per_stage)
+    if stage_epochs <= 0:
+        raise ValueError("curriculum epochs_per_stage must be greater than 0")
+    total_epochs = stages * stage_epochs
+    for epoch_index in range(total_epochs):
+        stage_index = epoch_index // stage_epochs
+        difficulty = epoch_index / total_epochs
+        train_kwargs = curriculum_train_kwargs(curriculum, difficulty)
+        curriculum_epochs.append(
+            CurriculumEpoch(
+                stage_index=stage_index,
+                epoch_index=epoch_index,
+                difficulty=difficulty,
+                epochs=1,
+                train_kwargs=train_kwargs,
+                augmentations=build_albumentations(
+                    curriculum, difficulty
+                ),
             )
-    return phases
+        )
+    return curriculum_epochs
 
 
 def curriculum_train_kwargs(
@@ -575,7 +665,7 @@ def curriculum_train_kwargs(
 
 def interpolate(value_range: NumericRangeConfig, difficulty: float) -> float:
     difficulty = max(0.0, min(1.0, difficulty))
-    return value_range.easy + (value_range.hard - value_range.easy) * difficulty
+    return value_range.start + (value_range.stop - value_range.start) * difficulty
 
 
 def build_albumentations(

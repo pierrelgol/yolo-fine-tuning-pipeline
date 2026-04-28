@@ -41,14 +41,14 @@ def build_parser() -> argparse.ArgumentParser:
     augment_parser.add_argument("--output-dir", type=Path)
 
     train_parser = subparsers.add_parser(
-        "train", help="Train on augmented dataset with curriculum phases"
+        "train", help="Train on augmented dataset with curriculum stages"
     )
     train_parser.add_argument("--dataset-yaml", type=Path)
     train_parser.add_argument("--model")
     train_parser.add_argument(
         "--epochs",
         type=int,
-        help="Override curriculum main_epochs_per_stage; easy and hard phases still run for 1 epoch each.",
+        help="Override curriculum epochs_per_stage.",
     )
     train_parser.add_argument("--imgsz", type=int)
     train_parser.add_argument("--batch", type=int)

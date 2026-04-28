@@ -108,4 +108,5 @@ This repo has no test suite, linter, formatter, type checker, or CI workflows. D
 - `dataset/` is gitignored. All pipeline output lives there and is ephemeral.
 - Run names are auto-incremented via `dataset/run_versions.json`. Training refuses to overwrite an existing run unless `--force` is passed.
 - The training dataset is rebuilt from scratch each time `train` runs (augmented samples are re-split).
+- Curriculum epochs are one continuous Ultralytics run. Each epoch resumes from the previous `last.pt`, preserving optimizer/scaler/EMA/scheduler state and the resolved auto batch size. Augmentation range values are interpolated per epoch across `stages * epochs_per_stage` total epochs, using `epoch_index / total_epochs`.
 - `config.toml` paths are resolved relative to the config file's parent directory (project root).

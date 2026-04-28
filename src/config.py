@@ -55,8 +55,8 @@ class AugmentConfig:
 
 @dataclass(frozen=True)
 class NumericRangeConfig:
-    easy: float
-    hard: float
+    start: float
+    stop: float
 
 
 @dataclass(frozen=True)
@@ -87,7 +87,7 @@ class AlbumentationTransformConfig:
 @dataclass(frozen=True)
 class CurriculumConfig:
     stages: int
-    main_epochs_per_stage: int
+    epochs_per_stage: int
     ranges: CurriculumRangeConfig
     albumentations: dict[str, AlbumentationTransformConfig]
 
@@ -383,8 +383,14 @@ def load_curriculum_config(payload: dict[str, Any]) -> CurriculumConfig:
     albumentations_payload = payload.get("albumentations", {})
     return CurriculumConfig(
         stages=max(1, int(payload.get("stages", 1))),
-        main_epochs_per_stage=max(
-            0, int(payload.get("main_epochs_per_stage", 1))
+        epochs_per_stage=max(
+            0,
+            int(
+                payload.get(
+                    "epochs_per_stage",
+                    payload.get("main_epochs_per_stage", 1),
+                )
+            ),
         ),
         ranges=CurriculumRangeConfig(
             hsv_h=read_range(ranges_payload, "hsv_h", (0.0, 0.015)),
@@ -424,15 +430,15 @@ def read_range(
 ) -> NumericRangeConfig:
     value = payload.get(name, default)
     if isinstance(value, (int, float)):
-        easy = hard = float(value)
+        start = stop = float(value)
     elif isinstance(value, list | tuple) and len(value) == 2:
-        easy = float(value[0])
-        hard = float(value[1])
+        start = float(value[0])
+        stop = float(value[1])
     else:
         raise ValueError(
             f"Expected {name!r} to be a number or two-value range"
         )
-    return NumericRangeConfig(easy=easy, hard=hard)
+    return NumericRangeConfig(start=start, stop=stop)
 
 
 def read_albumentation_transform_config(

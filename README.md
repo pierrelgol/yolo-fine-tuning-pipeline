@@ -96,6 +96,8 @@ Override any command from the CLI when needed:
 uv run python cli.py train --epochs 2 --batch 16
 ```
 
-`--epochs` overrides `train.curriculum.main_epochs_per_stage`. Each curriculum stage still runs one easy epoch, the requested current-difficulty epochs, and one hard epoch.
+`--epochs` overrides `train.curriculum.epochs_per_stage`. Every augmentation range is linearly interpolated once per epoch across `train.curriculum.stages * train.curriculum.epochs_per_stage` total curriculum epochs. For example, a range `[0, 12]` over 12 total epochs produces values equivalent to `0, 1, ..., 11`.
 
 `prepare` and `augment` default to `[augment].background_dir`, which is `dataset/coco128/images/train2017` in the checked-in config.
+
+Curriculum epochs are one continuous Ultralytics training run. Each epoch resumes from the prior `last.pt`, preserving optimizer, scaler, EMA, scheduler progress, and the auto-selected batch size while increasing the augmentation difficulty.

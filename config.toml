@@ -38,7 +38,7 @@ workers = 0
 
 [train.curriculum]
 stages = 4
-main_epochs_per_stage = 6
+epochs_per_stage = 8
 
 [train.curriculum.ranges]
 hsv_h = [0.0, 0.03]
