@@ -38,9 +38,13 @@ shear_degrees = 0.0
 perspective_fraction = 0.0
 vertical_flip_probability = 0.0
 horizontal_flip_probability = 0.5
+bgr_probability = 0.0
 mosaic_probability = 1.0
+close_mosaic_epochs = 0
 mixup_probability = 0.0
+cutmix_probability = 0.0
 copy_paste_probability = 0.0
+copy_paste_mode = "flip"
 workers = 0
 
 [eval]

@@ -66,9 +66,13 @@ class TrainHyperparameterConfig:
     perspective_fraction: float
     vertical_flip_probability: float
     horizontal_flip_probability: float
+    bgr_probability: float
     mosaic_probability: float
+    close_mosaic_epochs: int
     mixup_probability: float
+    cutmix_probability: float
     copy_paste_probability: float
+    copy_paste_mode: str
     workers: int
 
 
@@ -248,14 +252,26 @@ def load_config(config_path: Path | None = None) -> AppConfig:
                         "horizontal_flip_probability", 0.5
                     )
                 ),
+                bgr_probability=float(
+                    hyperparameters_payload.get("bgr_probability", 0.0)
+                ),
                 mosaic_probability=float(
                     hyperparameters_payload.get("mosaic_probability", 1.0)
+                ),
+                close_mosaic_epochs=int(
+                    hyperparameters_payload.get("close_mosaic_epochs", 0)
                 ),
                 mixup_probability=float(
                     hyperparameters_payload.get("mixup_probability", 0.0)
                 ),
+                cutmix_probability=float(
+                    hyperparameters_payload.get("cutmix_probability", 0.0)
+                ),
                 copy_paste_probability=float(
                     hyperparameters_payload.get("copy_paste_probability", 0.0)
+                ),
+                copy_paste_mode=str(
+                    hyperparameters_payload.get("copy_paste_mode", "flip")
                 ),
                 workers=int(hyperparameters_payload.get("workers", 0)),
             ),

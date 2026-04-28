@@ -163,9 +163,13 @@ def train_model(
             perspective=config.train.hyperparameters.perspective_fraction,
             flipud=config.train.hyperparameters.vertical_flip_probability,
             fliplr=config.train.hyperparameters.horizontal_flip_probability,
+            bgr=config.train.hyperparameters.bgr_probability,
             mosaic=config.train.hyperparameters.mosaic_probability,
+            close_mosaic=config.train.hyperparameters.close_mosaic_epochs,
             mixup=config.train.hyperparameters.mixup_probability,
+            cutmix=config.train.hyperparameters.cutmix_probability,
             copy_paste=config.train.hyperparameters.copy_paste_probability,
+            copy_paste_mode=config.train.hyperparameters.copy_paste_mode,
             workers=selected_workers,
         )
 
