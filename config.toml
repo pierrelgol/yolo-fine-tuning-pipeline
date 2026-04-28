@@ -1,5 +1,4 @@
 [paths]
-image_dir = "image"
 augment_source_dir = "images"
 dataset_dir = "dataset"
 
@@ -20,7 +19,6 @@ max_objects = 6
 [train]
 model_name = "yolo26n.pt"
 image_size = 640
-epochs = 32
 batch_size = -1
 device = "auto"
 
@@ -35,6 +33,57 @@ warmup_epochs = 3.0
 box_loss_gain = 7.5
 class_loss_gain = 0.5
 dfl_loss_gain = 1.5
+workers = 0
+
+[train.curriculum]
+stages = 4
+main_epochs_per_stage = 6
+
+[train.curriculum.ranges]
+hsv_h = [0.0, 0.03]
+hsv_s = [0.0, 0.7]
+hsv_v = [0.0, 0.4]
+degrees = [0.0, 5.0]
+translate = [0.0, 0.15]
+scale = [0.0, 0.6]
+shear = [0.0, 2.0]
+perspective = [0.0, 0.0]
+flipud = [0.0, 0.0]
+fliplr = [0.0, 0.5]
+bgr = [0.0, 0.0]
+mosaic = [0.0, 1.0]
+mixup = [0.0, 0.0]
+cutmix = [0.0, 0.0]
+copy_paste = [0.0, 0.0]
+
+[train.curriculum.albumentations.blur]
+enabled = true
+p = [0.0, 0.4]
+limit = [3, 7]
+
+[train.curriculum.albumentations.median_blur]
+enabled = false
+p = [0.0, 0.1]
+limit = [3, 5]
+
+[train.curriculum.albumentations.clahe]
+enabled = true
+p = [0.0, 0.2]
+clip_limit = [1.0, 4.0]
+
+[train.curriculum.albumentations.random_brightness_contrast]
+enabled = true
+p = [0.0, 0.3]
+brightness_limit = [0.0, 0.2]
+contrast_limit = [0.0, 0.2]
+
+[train.curriculum.albumentations.image_compression]
+enabled = true
+p = [0.0, 0.2]
+quality_lower = [95, 65]
+quality_upper = [100, 100]
+
+[train.curriculum.detection_defaults]
 hsv_h = 0.015
 hsv_s = 0.7
 hsv_v = 0.4
@@ -52,9 +101,8 @@ mixup = 0.0
 cutmix = 0.0
 copy_paste = 0.0
 copy_paste_mode = "flip"
-auto_augment = "randaugment"
-erasing = 0.4
-workers = 0
+auto_augment = ""
+erasing = 0.0
 
 [eval]
 dataset_yaml = "dataset/train/dataset.yaml"

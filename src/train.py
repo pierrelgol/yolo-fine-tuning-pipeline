@@ -35,7 +35,7 @@ from src.common import (
     write_json,
     yolo_label_line,
 )
-from src.config import AppConfig
+from src.config import AppConfig, CurriculumConfig, NumericRangeConfig
 from src.tracking import (
     alert_tracking_failure,
     finish_tracking_run,
@@ -55,6 +55,16 @@ class DatasetSample:
     source_name: str
 
 
+@dataclass(frozen=True)
+class CurriculumPhase:
+    stage_index: int
+    phase_name: str
+    difficulty: float
+    epochs: int
+    train_kwargs: dict[str, Any]
+    augmentations: list[Any]
+
+
 def train_model(
     config: AppConfig,
     dataset_yaml_path: Path | None = None,
@@ -66,7 +76,11 @@ def train_model(
     force: bool = False,
 ) -> Path:
     selected_model_name = model_name or config.train.model_name
-    selected_epochs = config.train.epochs if epochs is None else epochs
+    selected_epochs = (
+        config.train.curriculum.main_epochs_per_stage
+        if epochs is None
+        else epochs
+    )
     selected_image_size = (
         config.train.image_size if image_size is None else image_size
     )
@@ -116,7 +130,8 @@ def train_model(
             "dataset_yaml_path": portable_path(
                 selected_dataset_yaml_path, base_dir=config.paths.project_root
             ),
-            "epochs": selected_epochs,
+            "main_epochs_per_stage": selected_epochs,
+            "curriculum_stages": config.train.curriculum.stages,
             "image_size": selected_image_size,
             "batch_size": selected_batch_size,
             "requested_device": requested_device,
@@ -127,56 +142,87 @@ def train_model(
     )
 
     try:
-        model = YOLO(selected_model_name)
-        register_training_callbacks(
-            model, tracking_session, config.tracking.log_every_n_steps
+        curriculum_phases = build_curriculum_phases(
+            config.train.curriculum,
+            main_epochs_per_stage=selected_epochs,
         )
+        phase_runs: list[dict[str, Any]] = []
+        current_model_name = selected_model_name
+        training_results = None
+        final_phase_run_dir = run_dir
 
-        training_results = model.train(
-            data=str(selected_dataset_yaml_path),
-            epochs=selected_epochs,
-            imgsz=selected_image_size,
-            batch=selected_batch_size,
-            device=selected_device,
-            project=str(config.paths.train_runs_dir),
-            name=run_name,
-            exist_ok=force,
-            plots=True,
-            save=True,
-            patience=config.train.hyperparameters.patience,
-            optimizer=config.train.hyperparameters.optimizer,
-            lr0=config.train.hyperparameters.initial_learning_rate,
-            lrf=config.train.hyperparameters.final_learning_rate_factor,
-            momentum=config.train.hyperparameters.momentum,
-            weight_decay=config.train.hyperparameters.weight_decay,
-            warmup_epochs=config.train.hyperparameters.warmup_epochs,
-            box=config.train.hyperparameters.box_loss_gain,
-            cls=config.train.hyperparameters.class_loss_gain,
-            dfl=config.train.hyperparameters.dfl_loss_gain,
-            hsv_h=config.train.hyperparameters.hsv_h,
-            hsv_s=config.train.hyperparameters.hsv_s,
-            hsv_v=config.train.hyperparameters.hsv_v,
-            degrees=config.train.hyperparameters.degrees,
-            translate=config.train.hyperparameters.translate,
-            scale=config.train.hyperparameters.scale,
-            shear=config.train.hyperparameters.shear,
-            perspective=config.train.hyperparameters.perspective,
-            flipud=config.train.hyperparameters.flipud,
-            fliplr=config.train.hyperparameters.fliplr,
-            bgr=config.train.hyperparameters.bgr,
-            mosaic=config.train.hyperparameters.mosaic,
-            close_mosaic=config.train.hyperparameters.close_mosaic,
-            mixup=config.train.hyperparameters.mixup,
-            cutmix=config.train.hyperparameters.cutmix,
-            copy_paste=config.train.hyperparameters.copy_paste,
-            copy_paste_mode=config.train.hyperparameters.copy_paste_mode,
-            auto_augment=config.train.hyperparameters.auto_augment,
-            erasing=config.train.hyperparameters.erasing,
-            workers=selected_workers,
-        )
+        for phase_number, phase in enumerate(curriculum_phases, start=1):
+            phase_run_name = (
+                f"{run_name}-s{phase.stage_index + 1:02d}-{phase.phase_name}"
+            )
+            phase_run_dir = config.paths.train_runs_dir / phase_run_name
+            print(
+                f"Curriculum phase {phase_number}/{len(curriculum_phases)}: "
+                f"stage={phase.stage_index + 1}, phase={phase.phase_name}, "
+                f"difficulty={phase.difficulty:.3f}, epochs={phase.epochs}"
+            )
+            print(f"  Ultralytics kwargs: {phase.train_kwargs}")
+            print(
+                "  Albumentations: "
+                + ", ".join(
+                    str(transform) for transform in phase.augmentations
+                )
+            )
+
+            model = YOLO(current_model_name)
+            register_training_callbacks(
+                model, tracking_session, config.tracking.log_every_n_steps
+            )
+            training_results = model.train(
+                data=str(selected_dataset_yaml_path),
+                epochs=phase.epochs,
+                imgsz=selected_image_size,
+                batch=selected_batch_size,
+                device=selected_device,
+                project=str(config.paths.train_runs_dir),
+                name=phase_run_name,
+                exist_ok=force,
+                plots=True,
+                save=True,
+                patience=config.train.hyperparameters.patience,
+                optimizer=config.train.hyperparameters.optimizer,
+                lr0=config.train.hyperparameters.initial_learning_rate,
+                lrf=config.train.hyperparameters.final_learning_rate_factor,
+                momentum=config.train.hyperparameters.momentum,
+                weight_decay=config.train.hyperparameters.weight_decay,
+                warmup_epochs=config.train.hyperparameters.warmup_epochs,
+                box=config.train.hyperparameters.box_loss_gain,
+                cls=config.train.hyperparameters.class_loss_gain,
+                dfl=config.train.hyperparameters.dfl_loss_gain,
+                close_mosaic=config.train.hyperparameters.close_mosaic,
+                copy_paste_mode=config.train.hyperparameters.copy_paste_mode,
+                auto_augment=config.train.hyperparameters.auto_augment,
+                erasing=config.train.hyperparameters.erasing,
+                workers=selected_workers,
+                **phase.train_kwargs,
+                augmentations=phase.augmentations,
+            )
+            current_model_name = str(phase_run_dir / "weights" / "last.pt")
+            final_phase_run_dir = phase_run_dir
+            phase_runs.append(
+                {
+                    "stage": phase.stage_index + 1,
+                    "phase": phase.phase_name,
+                    "difficulty": phase.difficulty,
+                    "epochs": phase.epochs,
+                    "run_name": phase_run_name,
+                    "run_dir": portable_path(
+                        phase_run_dir, base_dir=config.paths.project_root
+                    ),
+                    "kwargs": phase.train_kwargs,
+                    "augmentations": [
+                        str(transform) for transform in phase.augmentations
+                    ],
+                }
+            )
 
         metrics = dict(getattr(training_results, "results_dict", {}) or {})
-        write_training_outputs(config, run_dir, metrics)
+        write_training_outputs(config, final_phase_run_dir, run_dir, metrics)
         write_json(
             config.paths.train_latest_run_path,
             {
@@ -197,9 +243,12 @@ def train_model(
                     config.paths.train_latest_weights_path,
                     base_dir=config.paths.project_root,
                 ),
+                "curriculum_phases": phase_runs,
             },
         )
-        log_training_summary(config, tracking_session, run_dir, metrics)
+        log_training_summary(
+            config, tracking_session, final_phase_run_dir, metrics
+        )
 
         print(f"Training dataset: {config.paths.train_dir}")
         print(f"Best weights: {config.paths.train_best_weights_path}")
@@ -383,19 +432,28 @@ def register_training_callbacks(
 
 
 def write_training_outputs(
-    config: AppConfig, run_dir: Path, metrics: dict[str, Any]
+    config: AppConfig,
+    source_run_dir: Path,
+    summary_run_dir: Path,
+    metrics: dict[str, Any],
 ) -> None:
+    summary_run_dir.mkdir(parents=True, exist_ok=True)
     metrics_json = json.dumps(metrics, indent=2, sort_keys=True)
     config.paths.train_metrics_path.write_text(metrics_json, encoding="utf-8")
-    (run_dir / "metrics.json").write_text(metrics_json, encoding="utf-8")
+    (summary_run_dir / "metrics.json").write_text(
+        metrics_json, encoding="utf-8"
+    )
+    (source_run_dir / "metrics.json").write_text(metrics_json, encoding="utf-8")
     copy_output_file(
-        run_dir / "results.csv", config.paths.train_results_csv_path
+        source_run_dir / "results.csv", config.paths.train_results_csv_path
     )
     copy_output_file(
-        run_dir / "weights" / "best.pt", config.paths.train_best_weights_path
+        source_run_dir / "weights" / "best.pt",
+        config.paths.train_best_weights_path,
     )
     copy_output_file(
-        run_dir / "weights" / "last.pt", config.paths.train_latest_weights_path
+        source_run_dir / "weights" / "last.pt",
+        config.paths.train_latest_weights_path,
     )
 
 
@@ -457,6 +515,120 @@ def log_training_summary(
             run_dir / "metrics.json",
         ],
     )
+
+
+def build_curriculum_phases(
+    curriculum: CurriculumConfig,
+    main_epochs_per_stage: int,
+) -> list[CurriculumPhase]:
+    phases: list[CurriculumPhase] = []
+    stages = max(1, curriculum.stages)
+    main_epochs = max(0, main_epochs_per_stage)
+    for stage_index in range(stages):
+        stage_difficulty = stage_index / (stages - 1) if stages > 1 else 0.0
+        for phase_name, difficulty, epochs in [
+            ("easy", 0.0, 1),
+            ("current", stage_difficulty, main_epochs),
+            ("hard", 1.0, 1),
+        ]:
+            if epochs <= 0:
+                continue
+            train_kwargs = curriculum_train_kwargs(curriculum, difficulty)
+            phases.append(
+                CurriculumPhase(
+                    stage_index=stage_index,
+                    phase_name=phase_name,
+                    difficulty=difficulty,
+                    epochs=epochs,
+                    train_kwargs=train_kwargs,
+                    augmentations=build_albumentations(curriculum, difficulty),
+                )
+            )
+    return phases
+
+
+def curriculum_train_kwargs(
+    curriculum: CurriculumConfig, difficulty: float
+) -> dict[str, float]:
+    return {
+        "hsv_h": interpolate(curriculum.ranges.hsv_h, difficulty),
+        "hsv_s": interpolate(curriculum.ranges.hsv_s, difficulty),
+        "hsv_v": interpolate(curriculum.ranges.hsv_v, difficulty),
+        "degrees": interpolate(curriculum.ranges.degrees, difficulty),
+        "translate": interpolate(curriculum.ranges.translate, difficulty),
+        "scale": interpolate(curriculum.ranges.scale, difficulty),
+        "shear": interpolate(curriculum.ranges.shear, difficulty),
+        "perspective": interpolate(curriculum.ranges.perspective, difficulty),
+        "flipud": interpolate(curriculum.ranges.flipud, difficulty),
+        "fliplr": interpolate(curriculum.ranges.fliplr, difficulty),
+        "bgr": interpolate(curriculum.ranges.bgr, difficulty),
+        "mosaic": interpolate(curriculum.ranges.mosaic, difficulty),
+        "mixup": interpolate(curriculum.ranges.mixup, difficulty),
+        "cutmix": interpolate(curriculum.ranges.cutmix, difficulty),
+        "copy_paste": interpolate(curriculum.ranges.copy_paste, difficulty),
+    }
+
+
+def interpolate(value_range: NumericRangeConfig, difficulty: float) -> float:
+    difficulty = max(0.0, min(1.0, difficulty))
+    return value_range.easy + (value_range.hard - value_range.easy) * difficulty
+
+
+def build_albumentations(
+    curriculum: CurriculumConfig, difficulty: float
+) -> list[Any]:
+    import albumentations as A
+
+    transforms: list[Any] = []
+    for name, transform_config in curriculum.albumentations.items():
+        if not transform_config.enabled:
+            continue
+        values = {
+            key: interpolate(value_range, difficulty)
+            for key, value_range in transform_config.ranges.items()
+        }
+        transform = build_albumentation_transform(A, name, values)
+        if transform is not None:
+            transforms.append(transform)
+    return transforms
+
+
+def build_albumentation_transform(
+    albumentations_module: Any, name: str, values: dict[str, float]
+) -> Any | None:
+    p = values.get("p", 0.0)
+    if name == "blur":
+        return albumentations_module.Blur(
+            blur_limit=odd_limit(values.get("limit", 3)), p=p
+        )
+    if name == "median_blur":
+        return albumentations_module.MedianBlur(
+            blur_limit=odd_limit(values.get("limit", 3)), p=p
+        )
+    if name == "clahe":
+        return albumentations_module.CLAHE(
+            clip_limit=max(1.0, values.get("clip_limit", 4.0)), p=p
+        )
+    if name == "random_brightness_contrast":
+        return albumentations_module.RandomBrightnessContrast(
+            brightness_limit=max(0.0, values.get("brightness_limit", 0.0)),
+            contrast_limit=max(0.0, values.get("contrast_limit", 0.0)),
+            p=p,
+        )
+    if name == "image_compression":
+        lower = int(round(values.get("quality_lower", 75)))
+        upper = int(round(values.get("quality_upper", 100)))
+        lower = max(1, min(100, lower))
+        upper = max(lower, min(100, upper))
+        return albumentations_module.ImageCompression(
+            quality_range=(lower, upper), p=p
+        )
+    return None
+
+
+def odd_limit(value: float) -> int:
+    limit = max(3, int(round(value)))
+    return limit if limit % 2 == 1 else limit + 1
 
 
 def build_training_image_mapping(

@@ -25,7 +25,10 @@ def build_parser() -> argparse.ArgumentParser:
     fetch_parser.add_argument("--url")
     fetch_parser.add_argument("--filename")
 
-    setup_parser = subparsers.add_parser("setup", help="Unpack the base dataset into dataset/coco128")
+    setup_parser = subparsers.add_parser(
+        "setup",
+        help="Validate source classes and unpack the base dataset into dataset/coco128",
+    )
     setup_parser.add_argument("--archive", type=Path)
     setup_parser.add_argument("--force", action="store_true")
 
@@ -34,10 +37,16 @@ def build_parser() -> argparse.ArgumentParser:
     augment_parser.add_argument("--source-image-dir", type=Path)
     augment_parser.add_argument("--output-dir", type=Path)
 
-    train_parser = subparsers.add_parser("train", help="Train on augmented dataset")
+    train_parser = subparsers.add_parser(
+        "train", help="Train on augmented dataset with curriculum phases"
+    )
     train_parser.add_argument("--dataset-yaml", type=Path)
     train_parser.add_argument("--model")
-    train_parser.add_argument("--epochs", type=int)
+    train_parser.add_argument(
+        "--epochs",
+        type=int,
+        help="Override curriculum main_epochs_per_stage; easy and hard phases still run for 1 epoch each.",
+    )
     train_parser.add_argument("--imgsz", type=int)
     train_parser.add_argument("--batch", type=int)
     train_parser.add_argument("--device")
