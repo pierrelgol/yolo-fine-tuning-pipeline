@@ -65,23 +65,25 @@ class TrainHyperparameterConfig:
     box_loss_gain: float
     class_loss_gain: float
     dfl_loss_gain: float
-    hue_augmentation: float
-    saturation_augmentation: float
-    value_augmentation: float
-    rotation_degrees: float
-    translation_fraction: float
-    scaling_gain: float
-    shear_degrees: float
-    perspective_fraction: float
-    vertical_flip_probability: float
-    horizontal_flip_probability: float
-    bgr_probability: float
-    mosaic_probability: float
-    close_mosaic_epochs: int
-    mixup_probability: float
-    cutmix_probability: float
-    copy_paste_probability: float
+    hsv_h: float
+    hsv_s: float
+    hsv_v: float
+    degrees: float
+    translate: float
+    scale: float
+    shear: float
+    perspective: float
+    flipud: float
+    fliplr: float
+    bgr: float
+    mosaic: float
+    close_mosaic: int
+    mixup: float
+    cutmix: float
+    copy_paste: float
     copy_paste_mode: str
+    auto_augment: str
+    erasing: float
     workers: int
 
 
@@ -239,60 +241,66 @@ def load_config(config_path: Path | None = None) -> AppConfig:
                 dfl_loss_gain=float(
                     hyperparameters_payload.get("dfl_loss_gain", 1.5)
                 ),
-                hue_augmentation=float(
-                    hyperparameters_payload.get("hue_augmentation", 0.015)
+                hsv_h=float(
+                    hyperparameters_payload.get("hsv_h", 0.015)
                 ),
-                saturation_augmentation=float(
-                    hyperparameters_payload.get("saturation_augmentation", 0.7)
+                hsv_s=float(
+                    hyperparameters_payload.get("hsv_s", 0.7)
                 ),
-                value_augmentation=float(
-                    hyperparameters_payload.get("value_augmentation", 0.4)
+                hsv_v=float(
+                    hyperparameters_payload.get("hsv_v", 0.4)
                 ),
-                rotation_degrees=float(
-                    hyperparameters_payload.get("rotation_degrees", 0.0)
+                degrees=float(
+                    hyperparameters_payload.get("degrees", 0.0)
                 ),
-                translation_fraction=float(
-                    hyperparameters_payload.get("translation_fraction", 0.1)
+                translate=float(
+                    hyperparameters_payload.get("translate", 0.1)
                 ),
-                scaling_gain=float(
-                    hyperparameters_payload.get("scaling_gain", 0.5)
+                scale=float(
+                    hyperparameters_payload.get("scale", 0.5)
                 ),
-                shear_degrees=float(
-                    hyperparameters_payload.get("shear_degrees", 0.0)
+                shear=float(
+                    hyperparameters_payload.get("shear", 0.0)
                 ),
-                perspective_fraction=float(
-                    hyperparameters_payload.get("perspective_fraction", 0.0)
+                perspective=float(
+                    hyperparameters_payload.get("perspective", 0.0)
                 ),
-                vertical_flip_probability=float(
+                flipud=float(
                     hyperparameters_payload.get(
-                        "vertical_flip_probability", 0.0
+                        "flipud", 0.0
                     )
                 ),
-                horizontal_flip_probability=float(
+                fliplr=float(
                     hyperparameters_payload.get(
-                        "horizontal_flip_probability", 0.5
+                        "fliplr", 0.5
                     )
                 ),
-                bgr_probability=float(
-                    hyperparameters_payload.get("bgr_probability", 0.0)
+                bgr=float(
+                    hyperparameters_payload.get("bgr", 0.0)
                 ),
-                mosaic_probability=float(
-                    hyperparameters_payload.get("mosaic_probability", 1.0)
+                mosaic=float(
+                    hyperparameters_payload.get("mosaic", 1.0)
                 ),
-                close_mosaic_epochs=int(
-                    hyperparameters_payload.get("close_mosaic_epochs", 0)
+                close_mosaic=int(
+                    hyperparameters_payload.get("close_mosaic", 0)
                 ),
-                mixup_probability=float(
-                    hyperparameters_payload.get("mixup_probability", 0.0)
+                mixup=float(
+                    hyperparameters_payload.get("mixup", 0.0)
                 ),
-                cutmix_probability=float(
-                    hyperparameters_payload.get("cutmix_probability", 0.0)
+                cutmix=float(
+                    hyperparameters_payload.get("cutmix", 0.0)
                 ),
-                copy_paste_probability=float(
-                    hyperparameters_payload.get("copy_paste_probability", 0.0)
+                copy_paste=float(
+                    hyperparameters_payload.get("copy_paste", 0.0)
                 ),
                 copy_paste_mode=str(
                     hyperparameters_payload.get("copy_paste_mode", "flip")
+                ),
+                auto_augment=str(
+                    hyperparameters_payload.get("auto_augment", "randaugment")
+                ),
+                erasing=float(
+                    hyperparameters_payload.get("erasing", 0.4)
                 ),
                 workers=int(hyperparameters_payload.get("workers", 0)),
             ),
