@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from src.annotate import launch_annotation_gui
 from src.augment import augment_with_annotations
 from src.clean import clean_artifacts, prune_artifacts
 from src.config import load_config
@@ -26,24 +25,31 @@ def build_parser() -> argparse.ArgumentParser:
     fetch_parser.add_argument("--url")
     fetch_parser.add_argument("--filename")
 
-    setup_parser = subparsers.add_parser("setup", help="Unpack the base dataset into dataset/coco128")
+    setup_parser = subparsers.add_parser(
+        "setup",
+        help="Validate source classes and unpack the base dataset into dataset/coco128",
+    )
     setup_parser.add_argument("--archive", type=Path)
     setup_parser.add_argument("--force", action="store_true")
 
-    annotate_parser = subparsers.add_parser("annotate", help="Open the annotation GUI")
-    annotate_parser.add_argument("--source-dir", type=Path)
-
-    augment_parser = subparsers.add_parser("augment", help="Build augmented samples from the annotation dataset")
-    augment_parser.add_argument("background_dir", type=Path)
+    augment_parser = subparsers.add_parser(
+        "augment",
+        help="Build augmented samples by compositing source classes onto backgrounds",
+    )
+    augment_parser.add_argument("background_dir", nargs="?", type=Path)
     augment_parser.add_argument("--source-image-dir", type=Path)
-    augment_parser.add_argument("--source-label-dir", type=Path)
-    augment_parser.add_argument("--classes-path", type=Path)
     augment_parser.add_argument("--output-dir", type=Path)
 
-    train_parser = subparsers.add_parser("train", help="Train with annotation classes only")
+    train_parser = subparsers.add_parser(
+        "train", help="Train on augmented dataset with curriculum stages"
+    )
     train_parser.add_argument("--dataset-yaml", type=Path)
     train_parser.add_argument("--model")
-    train_parser.add_argument("--epochs", type=int)
+    train_parser.add_argument(
+        "--epochs",
+        type=int,
+        help="Override curriculum epochs_per_stage.",
+    )
     train_parser.add_argument("--imgsz", type=int)
     train_parser.add_argument("--batch", type=int)
     train_parser.add_argument("--device")
@@ -65,10 +71,15 @@ def build_parser() -> argparse.ArgumentParser:
     watch_parser.add_argument("--conf", type=float)
     watch_parser.add_argument("--imgsz", type=int)
 
-    prepare_parser = subparsers.add_parser("prepare", help="Run fetch and setup in sequence")
+    prepare_parser = subparsers.add_parser(
+        "prepare", help="Run fetch, setup, and augment in sequence"
+    )
     prepare_parser.add_argument("--url")
     prepare_parser.add_argument("--filename")
     prepare_parser.add_argument("--archive", type=Path)
+    prepare_parser.add_argument("--background-dir", type=Path)
+    prepare_parser.add_argument("--source-image-dir", type=Path)
+    prepare_parser.add_argument("--output-dir", type=Path)
     prepare_parser.add_argument("--force", action="store_true")
 
     subparsers.add_parser("clean", help="Remove every generated artifact")
@@ -95,17 +106,11 @@ def main() -> None:
         prepare_dataset(config, archive_path=args.archive, force=args.force)
         return
 
-    if args.command == "annotate":
-        launch_annotation_gui(config, image_dir=args.source_dir)
-        return
-
     if args.command == "augment":
         augment_with_annotations(
             config,
             background_dir=args.background_dir,
-            image_dir=args.source_image_dir,
-            label_dir=args.source_label_dir,
-            classes_path=args.classes_path,
+            source_image_dir=args.source_image_dir,
             output_dir=args.output_dir,
         )
         return
@@ -144,6 +149,12 @@ def main() -> None:
     if args.command == "prepare":
         fetch_dataset(config, dataset_url=args.url, archive_name=args.filename)
         prepare_dataset(config, archive_path=args.archive, force=args.force)
+        augment_with_annotations(
+            config,
+            background_dir=args.background_dir,
+            source_image_dir=args.source_image_dir,
+            output_dir=args.output_dir,
+        )
         return
 
     if args.command == "watch":

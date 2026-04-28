@@ -8,6 +8,12 @@ from typing import Any
 
 import torch
 from ultralytics import YOLO
+from ultralytics.cfg import get_cfg
+from ultralytics.models.yolo.detect.train import DetectionTrainer
+from ultralytics.nn.tasks import load_checkpoint
+from ultralytics.utils import DEFAULT_CFG, LOGGER
+from ultralytics.utils.checks import check_file
+from ultralytics.utils.files import get_latest_run
 
 from src.common import (
     TRAIN_SPLIT,
@@ -30,12 +36,11 @@ from src.common import (
     resolve_path,
     save_class_map,
     save_yolo_labels,
-    split_items,
     write_dataset_yaml,
     write_json,
     yolo_label_line,
 )
-from src.config import AppConfig
+from src.config import AppConfig, CurriculumConfig, NumericRangeConfig
 from src.tracking import (
     alert_tracking_failure,
     finish_tracking_run,
@@ -55,6 +60,121 @@ class DatasetSample:
     source_name: str
 
 
+@dataclass(frozen=True)
+class CurriculumEpoch:
+    stage_index: int
+    epoch_index: int
+    difficulty: float
+    epochs: int
+    train_kwargs: dict[str, Any]
+    augmentations: list[Any]
+
+
+CURRICULUM_RESUME_KEYS = {
+    "hsv_h",
+    "hsv_s",
+    "hsv_v",
+    "degrees",
+    "translate",
+    "scale",
+    "shear",
+    "perspective",
+    "flipud",
+    "fliplr",
+    "bgr",
+    "mosaic",
+    "mixup",
+    "cutmix",
+    "copy_paste",
+    "augmentations",
+}
+
+
+class CurriculumDetectionTrainer(DetectionTrainer):
+    def __init__(
+        self, cfg=DEFAULT_CFG, overrides=None, _callbacks: dict | None = None
+    ):
+        overrides = dict(overrides or {})
+        self.curriculum_schedule = overrides.pop("curriculum_schedule", [])
+        super().__init__(cfg=cfg, overrides=overrides, _callbacks=_callbacks)
+
+    def run_callbacks(self, event: str):
+        if event == "on_train_epoch_start":
+            self.apply_curriculum_epoch()
+        super().run_callbacks(event)
+
+    def apply_curriculum_epoch(self) -> None:
+        if not self.curriculum_schedule:
+            return
+        if self.epoch >= len(self.curriculum_schedule):
+            return
+
+        epoch_config = self.curriculum_schedule[self.epoch]
+        for key, value in epoch_config["kwargs"].items():
+            setattr(self.args, key, value)
+        self.args.augmentations = epoch_config["augmentations"]
+
+        train_dataset = getattr(self.train_loader, "dataset", None)
+        if train_dataset is not None and hasattr(train_dataset, "build_transforms"):
+            train_dataset.transforms = train_dataset.build_transforms(self.args)
+        LOGGER.info(
+            "curriculum: epoch=%s/%s stage=%s difficulty=%.6f",
+            self.epoch + 1,
+            len(self.curriculum_schedule),
+            epoch_config["stage"],
+            epoch_config["difficulty"],
+        )
+
+    def check_resume(self, overrides):
+        resume = self.args.resume
+        if resume:
+            try:
+                exists = isinstance(resume, (str, Path)) and Path(resume).exists()
+                last = Path(check_file(resume) if exists else get_latest_run())
+                ckpt_args = load_checkpoint(last)[0].args
+                if not isinstance(ckpt_args["data"], dict) and not Path(
+                    ckpt_args["data"]
+                ).exists():
+                    ckpt_args["data"] = self.args.data
+
+                resume = True
+                self.args = get_cfg(ckpt_args)
+                self.args.model = self.args.resume = str(last)
+                for key in (
+                    "imgsz",
+                    "batch",
+                    "device",
+                    "close_mosaic",
+                    "save_period",
+                    "workers",
+                    "cache",
+                    "patience",
+                    "time",
+                    "freeze",
+                    "val",
+                    "plots",
+                    "epochs",
+                    *CURRICULUM_RESUME_KEYS,
+                ):
+                    if key in overrides:
+                        setattr(self.args, key, overrides[key])
+
+                if (
+                    ckpt_args.get("augmentations") is not None
+                    and "augmentations" not in overrides
+                ):
+                    LOGGER.warning(
+                        "Custom Albumentations transforms were used in the original training run but are not "
+                        "being restored. Pass 'augmentations' when resuming to preserve expected results."
+                    )
+            except Exception as error:
+                raise FileNotFoundError(
+                    "Resume checkpoint not found. Please pass a valid checkpoint to resume from, "
+                    "i.e. 'yolo train resume model=path/to/last.pt'"
+                ) from error
+        self.resume = resume
+
+
 def train_model(
     config: AppConfig,
     dataset_yaml_path: Path | None = None,
@@ -66,7 +186,13 @@ def train_model(
     force: bool = False,
 ) -> Path:
     selected_model_name = model_name or config.train.model_name
-    selected_epochs = config.train.epochs if epochs is None else epochs
+    selected_epochs = (
+        config.train.curriculum.epochs_per_stage
+        if epochs is None
+        else epochs
+    )
+    if selected_epochs < 0:
+        raise ValueError("--epochs must be zero or greater")
     selected_image_size = (
         config.train.image_size if image_size is None else image_size
     )
@@ -116,7 +242,8 @@ def train_model(
             "dataset_yaml_path": portable_path(
                 selected_dataset_yaml_path, base_dir=config.paths.project_root
             ),
-            "epochs": selected_epochs,
+            "epochs_per_stage": selected_epochs,
+            "curriculum_stages": config.train.curriculum.stages,
             "image_size": selected_image_size,
             "batch_size": selected_batch_size,
             "requested_device": requested_device,
@@ -127,14 +254,28 @@ def train_model(
     )
 
     try:
+        curriculum_epochs = build_curriculum_epochs(
+            config.train.curriculum,
+            epochs_per_stage=selected_epochs,
+        )
+        curriculum_schedule = build_curriculum_schedule(curriculum_epochs)
+        serializable_curriculum_schedule = serialize_curriculum_schedule(
+            curriculum_schedule
+        )
+        first_epoch = curriculum_epochs[0]
+        total_epochs = len(curriculum_epochs)
+        print(f"Curriculum epochs: {total_epochs}")
+        print(f"  first kwargs: {first_epoch.train_kwargs}")
+        print(f"  last kwargs: {curriculum_epochs[-1].train_kwargs}")
+
         model = YOLO(selected_model_name)
         register_training_callbacks(
             model, tracking_session, config.tracking.log_every_n_steps
         )
-
         training_results = model.train(
+            trainer=CurriculumDetectionTrainer,
             data=str(selected_dataset_yaml_path),
-            epochs=selected_epochs,
+            epochs=total_epochs,
             imgsz=selected_image_size,
             batch=selected_batch_size,
             device=selected_device,
@@ -153,24 +294,18 @@ def train_model(
             box=config.train.hyperparameters.box_loss_gain,
             cls=config.train.hyperparameters.class_loss_gain,
             dfl=config.train.hyperparameters.dfl_loss_gain,
-            hsv_h=config.train.hyperparameters.hue_augmentation,
-            hsv_s=config.train.hyperparameters.saturation_augmentation,
-            hsv_v=config.train.hyperparameters.value_augmentation,
-            degrees=config.train.hyperparameters.rotation_degrees,
-            translate=config.train.hyperparameters.translation_fraction,
-            scale=config.train.hyperparameters.scaling_gain,
-            shear=config.train.hyperparameters.shear_degrees,
-            perspective=config.train.hyperparameters.perspective_fraction,
-            flipud=config.train.hyperparameters.vertical_flip_probability,
-            fliplr=config.train.hyperparameters.horizontal_flip_probability,
-            mosaic=config.train.hyperparameters.mosaic_probability,
-            mixup=config.train.hyperparameters.mixup_probability,
-            copy_paste=config.train.hyperparameters.copy_paste_probability,
+            close_mosaic=config.train.hyperparameters.close_mosaic,
+            copy_paste_mode=config.train.hyperparameters.copy_paste_mode,
+            auto_augment=config.train.hyperparameters.auto_augment,
+            erasing=config.train.hyperparameters.erasing,
             workers=selected_workers,
+            **first_epoch.train_kwargs,
+            augmentations=first_epoch.augmentations,
+            curriculum_schedule=curriculum_schedule,
         )
 
         metrics = dict(getattr(training_results, "results_dict", {}) or {})
-        write_training_outputs(config, run_dir, metrics)
+        write_training_outputs(config, run_dir, run_dir, metrics)
         write_json(
             config.paths.train_latest_run_path,
             {
@@ -191,6 +326,7 @@ def train_model(
                     config.paths.train_latest_weights_path,
                     base_dir=config.paths.project_root,
                 ),
+                "curriculum_epochs": serializable_curriculum_schedule,
             },
         )
         log_training_summary(config, tracking_session, run_dir, metrics)
@@ -208,18 +344,15 @@ def train_model(
 
 def build_training_dataset(config: AppConfig) -> Path:
     class_map = load_class_map(
-        dataset_classes_path(config.paths.annotation_dir)
+        dataset_classes_path(config.paths.augmented_dir)
     )
     class_names = ordered_class_names(class_map)
     if not class_names:
         raise FileNotFoundError(
-            f"No annotation classes found in {dataset_classes_path(config.paths.annotation_dir)}. Run annotate before train."
+            f"No classes found in augmented dataset. Run augment before train."
         )
 
     valid_class_ids = set(class_map.values())
-    annotation_samples = collect_samples(
-        config.paths.annotation_dir, TRAIN_SPLIT
-    )
     augmented_train_samples = collect_samples(
         config.paths.augmented_dir, TRAIN_SPLIT
     )
@@ -227,31 +360,17 @@ def build_training_dataset(config: AppConfig) -> Path:
         config.paths.augmented_dir, VAL_SPLIT
     )
 
-    if augmented_train_samples or augmented_val_samples:
-        train_samples = annotation_samples + augmented_train_samples
-        val_samples = augmented_val_samples
-        if not val_samples:
-            train_samples, val_samples = split_items(
-                train_samples,
-                config.setup.train_split,
-                config.setup.random_seed,
-            )
+    if augmented_train_samples:
+        train_samples = augmented_train_samples
+        val_samples = augmented_val_samples if augmented_val_samples else list(augmented_train_samples)
     else:
-        train_samples, val_samples = split_items(
-            annotation_samples,
-            config.setup.train_split,
-            config.setup.random_seed,
-        )
-        if not val_samples and train_samples:
-            val_samples = list(train_samples)
-
-    if not train_samples:
         raise FileNotFoundError(
-            "No training images found. Run annotate or augment before train."
+            "No augmented training images found. Run augment before train."
         )
+
     if count_positive_samples(train_samples + val_samples) == 0:
         raise ValueError(
-            "No labeled annotations found for training. Add at least one bounding box before train."
+            "No labeled samples found for training. Check that augment produced labeled images."
         )
 
     clear_training_dataset(config)
@@ -394,19 +513,28 @@ def register_training_callbacks(
 
 
 def write_training_outputs(
-    config: AppConfig, run_dir: Path, metrics: dict[str, Any]
+    config: AppConfig,
+    source_run_dir: Path,
+    summary_run_dir: Path,
+    metrics: dict[str, Any],
 ) -> None:
+    summary_run_dir.mkdir(parents=True, exist_ok=True)
     metrics_json = json.dumps(metrics, indent=2, sort_keys=True)
     config.paths.train_metrics_path.write_text(metrics_json, encoding="utf-8")
-    (run_dir / "metrics.json").write_text(metrics_json, encoding="utf-8")
+    (summary_run_dir / "metrics.json").write_text(
+        metrics_json, encoding="utf-8"
+    )
+    (source_run_dir / "metrics.json").write_text(metrics_json, encoding="utf-8")
     copy_output_file(
-        run_dir / "results.csv", config.paths.train_results_csv_path
+        source_run_dir / "results.csv", config.paths.train_results_csv_path
     )
     copy_output_file(
-        run_dir / "weights" / "best.pt", config.paths.train_best_weights_path
+        source_run_dir / "weights" / "best.pt",
+        config.paths.train_best_weights_path,
     )
     copy_output_file(
-        run_dir / "weights" / "last.pt", config.paths.train_latest_weights_path
+        source_run_dir / "weights" / "last.pt",
+        config.paths.train_latest_weights_path,
     )
 
 
@@ -468,6 +596,153 @@ def log_training_summary(
             run_dir / "metrics.json",
         ],
     )
+
+
+def build_curriculum_epochs(
+    curriculum: CurriculumConfig,
+    epochs_per_stage: int,
+) -> list[CurriculumEpoch]:
+    curriculum_epochs: list[CurriculumEpoch] = []
+    stages = max(1, curriculum.stages)
+    stage_epochs = max(0, epochs_per_stage)
+    if stage_epochs <= 0:
+        raise ValueError("curriculum epochs_per_stage must be greater than 0")
+    total_epochs = stages * stage_epochs
+    for epoch_index in range(total_epochs):
+        stage_index = epoch_index // stage_epochs
+        difficulty = epoch_index / total_epochs
+        train_kwargs = curriculum_train_kwargs(curriculum, difficulty)
+        curriculum_epochs.append(
+            CurriculumEpoch(
+                stage_index=stage_index,
+                epoch_index=epoch_index,
+                difficulty=difficulty,
+                epochs=1,
+                train_kwargs=train_kwargs,
+                augmentations=build_albumentations(
+                    curriculum, difficulty
+                ),
+            )
+        )
+    return curriculum_epochs
+
+
+def build_curriculum_schedule(
+    curriculum_epochs: list[CurriculumEpoch],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "stage": curriculum_epoch.stage_index + 1,
+            "epoch_index": curriculum_epoch.epoch_index,
+            "difficulty": curriculum_epoch.difficulty,
+            "kwargs": curriculum_epoch.train_kwargs,
+            "augmentations": curriculum_epoch.augmentations,
+            "augmentation_descriptions": [
+                str(transform)
+                for transform in curriculum_epoch.augmentations
+            ],
+        }
+        for curriculum_epoch in curriculum_epochs
+    ]
+
+
+def serialize_curriculum_schedule(
+    curriculum_schedule: list[dict[str, Any]],
+) -> list[dict[str, Any]]:
+    return [
+        {
+            "stage": item["stage"],
+            "epoch_index": item["epoch_index"],
+            "difficulty": item["difficulty"],
+            "kwargs": item["kwargs"],
+            "augmentations": item["augmentation_descriptions"],
+        }
+        for item in curriculum_schedule
+    ]
+
+
+def curriculum_train_kwargs(
+    curriculum: CurriculumConfig, difficulty: float
+) -> dict[str, float]:
+    return {
+        "hsv_h": interpolate(curriculum.ranges.hsv_h, difficulty),
+        "hsv_s": interpolate(curriculum.ranges.hsv_s, difficulty),
+        "hsv_v": interpolate(curriculum.ranges.hsv_v, difficulty),
+        "degrees": interpolate(curriculum.ranges.degrees, difficulty),
+        "translate": interpolate(curriculum.ranges.translate, difficulty),
+        "scale": interpolate(curriculum.ranges.scale, difficulty),
+        "shear": interpolate(curriculum.ranges.shear, difficulty),
+        "perspective": interpolate(curriculum.ranges.perspective, difficulty),
+        "flipud": interpolate(curriculum.ranges.flipud, difficulty),
+        "fliplr": interpolate(curriculum.ranges.fliplr, difficulty),
+        "bgr": interpolate(curriculum.ranges.bgr, difficulty),
+        "mosaic": interpolate(curriculum.ranges.mosaic, difficulty),
+        "mixup": interpolate(curriculum.ranges.mixup, difficulty),
+        "cutmix": interpolate(curriculum.ranges.cutmix, difficulty),
+        "copy_paste": interpolate(curriculum.ranges.copy_paste, difficulty),
+    }
+
+
+def interpolate(value_range: NumericRangeConfig, difficulty: float) -> float:
+    difficulty = max(0.0, min(1.0, difficulty))
+    return value_range.start + (value_range.stop - value_range.start) * difficulty
+
+
+def build_albumentations(
+    curriculum: CurriculumConfig, difficulty: float
+) -> list[Any]:
+    import albumentations as A
+
+    transforms: list[Any] = []
+    for name, transform_config in curriculum.albumentations.items():
+        if not transform_config.enabled:
+            continue
+        values = {
+            key: interpolate(value_range, difficulty)
+            for key, value_range in transform_config.ranges.items()
+        }
+        transform = build_albumentation_transform(A, name, values)
+        if transform is not None:
+            transforms.append(transform)
+    return transforms
+
+
+def build_albumentation_transform(
+    albumentations_module: Any, name: str, values: dict[str, float]
+) -> Any | None:
+    p = values.get("p", 0.0)
+    if name == "blur":
+        return albumentations_module.Blur(
+            blur_limit=odd_limit(values.get("limit", 3)), p=p
+        )
+    if name == "median_blur":
+        return albumentations_module.MedianBlur(
+            blur_limit=odd_limit(values.get("limit", 3)), p=p
+        )
+    if name == "clahe":
+        return albumentations_module.CLAHE(
+            clip_limit=max(1.0, values.get("clip_limit", 4.0)), p=p
+        )
+    if name == "random_brightness_contrast":
+        return albumentations_module.RandomBrightnessContrast(
+            brightness_limit=max(0.0, values.get("brightness_limit", 0.0)),
+            contrast_limit=max(0.0, values.get("contrast_limit", 0.0)),
+            p=p,
+        )
+    if name == "image_compression":
+        lower = int(round(values.get("quality_lower", 75)))
+        upper = int(round(values.get("quality_upper", 100)))
+        lower = max(1, min(100, lower))
+        upper = max(lower, min(100, upper))
+        return albumentations_module.ImageCompression(
+            quality_range=(lower, upper), p=p
+        )
+    return None
+
+
+def odd_limit(value: float) -> int:
+    limit = max(3, int(round(value)))
+    return limit if limit % 2 == 1 else limit + 1
 
 
 def build_training_image_mapping(

@@ -19,7 +19,6 @@ def prune_artifacts(config: AppConfig) -> None:
 
     for dataset_dir in [
         config.paths.coco128_dir,
-        config.paths.annotation_dir,
         config.paths.augmented_dir,
     ]:
         remove_path(dataset_dir / "predictions")
