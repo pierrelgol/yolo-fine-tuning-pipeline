@@ -1,5 +1,6 @@
 [paths]
 image_dir = "image"
+augment_source_dir = "images"
 dataset_dir = "dataset"
 
 [fetch]
@@ -10,11 +11,17 @@ archive_name = "coco128.zip"
 train_split = 0.8
 random_seed = 42
 
+[augment]
+scale_min = 0.05
+scale_max = 0.35
+min_objects = 1
+max_objects = 6
+
 [train]
 model_name = "yolo26n.pt"
 image_size = 640
 epochs = 32
-batch_size = 8
+batch_size = -1
 device = "auto"
 
 [train.hyperparameters]
@@ -28,16 +35,16 @@ warmup_epochs = 3.0
 box_loss_gain = 7.5
 class_loss_gain = 0.5
 dfl_loss_gain = 1.5
-hue_augmentation = 0.015
-saturation_augmentation = 0.7
-value_augmentation = 0.4
+hue_augmentation = 0.0
+saturation_augmentation = 0.0
+value_augmentation = 0.0
 rotation_degrees = 0.0
-translation_fraction = 0.1
-scaling_gain = 0.5
+translation_fraction = 0.0
+scaling_gain = 0.0
 shear_degrees = 0.0
 perspective_fraction = 0.0
 vertical_flip_probability = 0.0
-horizontal_flip_probability = 0.5
+horizontal_flip_probability = 0.0
 bgr_probability = 0.0
 mosaic_probability = 1.0
 close_mosaic_epochs = 0

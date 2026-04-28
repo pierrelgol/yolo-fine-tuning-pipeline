@@ -5,7 +5,7 @@
 ```bash
 just install          # uv sync — creates .venv
 just prepare          # fetch + setup (download coco128, unpack into dataset/)
-just annotate         # opens annotation GUI for labeling images
+just augment <bg_dir> # composites images from images/<class>/ onto coco backgrounds
 just train            # builds dataset/train, trains model, logs to Trackio
 just eval             # evaluates latest trained weights
 just infer            # runs inference on dataset/augmented (default)
@@ -34,9 +34,8 @@ All dataset subdirectories follow the same structure:
 ```
 dataset/
   raw/            # downloaded archive
-  coco128/        # unpacked base dataset
-  annotation/     # user-labeled images (output of `just annotate`)
-  augmented/      # synthetic samples (output of `just augment <bg_dir>`)
+  coco128/        # unpacked base dataset (background images)
+  augmented/      # synthetic composites (output of `just augment`)
   train/          # assembled train/val split + weights (output of `just train`)
   eval/           # evaluation results
   infer/          # inference predictions
@@ -44,17 +43,41 @@ dataset/
 
 Each dataset folder contains `images/<split>/`, `labels/<split>/`, `predictions/<split>/`, `classes.json`, `dataset.yaml`, `manifest.json`. Splits are `train2017` and `val2017` (defined in `src/common.py`).
 
+## Source Images
+
+The `images/` directory (configured via `augment_source_dir` in `config.toml`) holds class-specific images organized by subfolder:
+
+```
+images/
+  panda/
+    img1.jpg
+    img2.jpg
+  mouse/
+    img3.jpg
+```
+
+Subfolder names become class names. No manual annotation is needed — classes are inferred from the directory structure.
+
 ## Pipeline Order Matters
 
 Commands depend on prior steps producing artifacts:
 1. `fetch` → `dataset/raw/coco128.zip`
 2. `setup` → `dataset/coco128/`
-3. `annotate` → `dataset/annotation/` (required before `train`)
-4. `augment` → `dataset/augmented/` (optional, enriches training data)
-5. `train` → `dataset/train/` + weights at `dataset/train/best.pt` and `dataset/train/latest.pt`
-6. `eval` / `infer` / `watch` → consume trained weights
+3. `augment <bg_dir>` → `dataset/augmented/` (required before `train`)
+4. `train` → `dataset/train/` + weights at `dataset/train/best.pt` and `dataset/train/latest.pt`
+5. `eval` / `infer` / `watch` → consume trained weights
 
 `just prepare` combines fetch + setup.
+
+## Augmentation
+
+The augment step composites source images onto background images:
+- Source images come from `images/<class_name>/` subfolders
+- Class labels are inferred from subfolder names
+- Each background image gets N objects placed at random positions (N from `min_objects`..`max_objects` in config)
+- Object scale is randomized between `scale_min` and `scale_max` (fraction of background's shorter dimension)
+- YOLO labels cover the full pasted image area, scaled to background dimensions
+- Output is split into train/val using `setup.train_split` and `setup.random_seed`
 
 ## src/ Module Map
 
@@ -65,9 +88,8 @@ Commands depend on prior steps producing artifacts:
 | `src/common.py` | Shared utilities: path resolution, YOLO label I/O, class maps, dataset YAML generation |
 | `src/fetch.py` | Downloads dataset archive |
 | `src/setup.py` | Unpacks archive, creates initial split |
-| `src/annotate.py` | Annotation GUI |
-| `src/augment.py` | Background compositing augmentation |
-| `src/train.py` | Builds training dataset, runs ultralytics YOLO training with Trackio callbacks |
+| `src/augment.py` | Composites source images onto backgrounds with random placement and scaling |
+| `src/train.py` | Builds training dataset from augmented samples, runs ultralytics YOLO training with Trackio callbacks |
 | `src/eval.py` | Model evaluation |
 | `src/infer.py` | Batch inference |
 | `src/watch.py` | Live video inference |
@@ -83,5 +105,5 @@ This repo has no test suite, linter, formatter, type checker, or CI workflows. D
 
 - `dataset/` is gitignored. All pipeline output lives there and is ephemeral.
 - Run names are auto-incremented via `dataset/run_versions.json`. Training refuses to overwrite an existing run unless `--force` is passed.
-- The training dataset is rebuilt from scratch each time `train` runs (annotation + augmented samples are re-split).
+- The training dataset is rebuilt from scratch each time `train` runs (augmented samples are re-split).
 - `config.toml` paths are resolved relative to the config file's parent directory (project root).

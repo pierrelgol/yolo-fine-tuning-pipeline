@@ -212,18 +212,15 @@ def train_model(
 
 def build_training_dataset(config: AppConfig) -> Path:
     class_map = load_class_map(
-        dataset_classes_path(config.paths.annotation_dir)
+        dataset_classes_path(config.paths.augmented_dir)
     )
     class_names = ordered_class_names(class_map)
     if not class_names:
         raise FileNotFoundError(
-            f"No annotation classes found in {dataset_classes_path(config.paths.annotation_dir)}. Run annotate before train."
+            f"No classes found in augmented dataset. Run augment before train."
         )
 
     valid_class_ids = set(class_map.values())
-    annotation_samples = collect_samples(
-        config.paths.annotation_dir, TRAIN_SPLIT
-    )
     augmented_train_samples = collect_samples(
         config.paths.augmented_dir, TRAIN_SPLIT
     )
@@ -231,31 +228,17 @@ def build_training_dataset(config: AppConfig) -> Path:
         config.paths.augmented_dir, VAL_SPLIT
     )
 
-    if augmented_train_samples or augmented_val_samples:
-        train_samples = annotation_samples + augmented_train_samples
-        val_samples = augmented_val_samples
-        if not val_samples:
-            train_samples, val_samples = split_items(
-                train_samples,
-                config.setup.train_split,
-                config.setup.random_seed,
-            )
+    if augmented_train_samples:
+        train_samples = augmented_train_samples
+        val_samples = augmented_val_samples if augmented_val_samples else list(augmented_train_samples)
     else:
-        train_samples, val_samples = split_items(
-            annotation_samples,
-            config.setup.train_split,
-            config.setup.random_seed,
-        )
-        if not val_samples and train_samples:
-            val_samples = list(train_samples)
-
-    if not train_samples:
         raise FileNotFoundError(
-            "No training images found. Run annotate or augment before train."
+            "No augmented training images found. Run augment before train."
         )
+
     if count_positive_samples(train_samples + val_samples) == 0:
         raise ValueError(
-            "No labeled annotations found for training. Add at least one bounding box before train."
+            "No labeled samples found for training. Check that augment produced labeled images."
         )
 
     clear_training_dataset(config)

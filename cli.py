@@ -3,7 +3,6 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 
-from src.annotate import launch_annotation_gui
 from src.augment import augment_with_annotations
 from src.clean import clean_artifacts, prune_artifacts
 from src.config import load_config
@@ -30,17 +29,12 @@ def build_parser() -> argparse.ArgumentParser:
     setup_parser.add_argument("--archive", type=Path)
     setup_parser.add_argument("--force", action="store_true")
 
-    annotate_parser = subparsers.add_parser("annotate", help="Open the annotation GUI")
-    annotate_parser.add_argument("--source-dir", type=Path)
-
-    augment_parser = subparsers.add_parser("augment", help="Build augmented samples from the annotation dataset")
+    augment_parser = subparsers.add_parser("augment", help="Build augmented samples by compositing images onto backgrounds")
     augment_parser.add_argument("background_dir", type=Path)
     augment_parser.add_argument("--source-image-dir", type=Path)
-    augment_parser.add_argument("--source-label-dir", type=Path)
-    augment_parser.add_argument("--classes-path", type=Path)
     augment_parser.add_argument("--output-dir", type=Path)
 
-    train_parser = subparsers.add_parser("train", help="Train with annotation classes only")
+    train_parser = subparsers.add_parser("train", help="Train on augmented dataset")
     train_parser.add_argument("--dataset-yaml", type=Path)
     train_parser.add_argument("--model")
     train_parser.add_argument("--epochs", type=int)
@@ -95,17 +89,11 @@ def main() -> None:
         prepare_dataset(config, archive_path=args.archive, force=args.force)
         return
 
-    if args.command == "annotate":
-        launch_annotation_gui(config, image_dir=args.source_dir)
-        return
-
     if args.command == "augment":
         augment_with_annotations(
             config,
             background_dir=args.background_dir,
-            image_dir=args.source_image_dir,
-            label_dir=args.source_label_dir,
-            classes_path=args.classes_path,
+            source_image_dir=args.source_image_dir,
             output_dir=args.output_dir,
         )
         return

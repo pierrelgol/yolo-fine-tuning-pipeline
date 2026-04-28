@@ -11,6 +11,7 @@ from src.common import resolve_path as resolve_common_path
 class PathConfig:
     project_root: Path
     image_dir: Path
+    augment_source_dir: Path
     dataset_dir: Path
     raw_dir: Path
     coco128_dir: Path
@@ -42,6 +43,14 @@ class FetchConfig:
 class SetupConfig:
     train_split: float
     random_seed: int
+
+
+@dataclass(frozen=True)
+class AugmentConfig:
+    scale_min: float
+    scale_max: float
+    min_objects: int
+    max_objects: int
 
 
 @dataclass(frozen=True)
@@ -120,6 +129,7 @@ class AppConfig:
     paths: PathConfig
     fetch: FetchConfig
     setup: SetupConfig
+    augment: AugmentConfig
     train: TrainConfig
     evaluate: EvalConfig
     infer: InferConfig
@@ -136,6 +146,7 @@ def load_config(config_path: Path | None = None) -> AppConfig:
     paths_payload = payload.get("paths", {})
     fetch_payload = payload.get("fetch", {})
     setup_payload = payload.get("setup", {})
+    augment_payload = payload.get("augment", {})
     train_payload = payload.get("train", {})
     eval_payload = payload.get("eval", {})
     infer_payload = payload.get("infer", {})
@@ -145,6 +156,9 @@ def load_config(config_path: Path | None = None) -> AppConfig:
 
     image_dir = resolve_path(
         project_root, str(paths_payload.get("image_dir", "image"))
+    )
+    augment_source_dir = resolve_path(
+        project_root, str(paths_payload.get("augment_source_dir", "images"))
     )
     dataset_dir = resolve_path(
         project_root, str(paths_payload.get("dataset_dir", "dataset"))
@@ -157,6 +171,7 @@ def load_config(config_path: Path | None = None) -> AppConfig:
         paths=PathConfig(
             project_root=project_root,
             image_dir=image_dir,
+            augment_source_dir=augment_source_dir,
             dataset_dir=dataset_dir,
             raw_dir=dataset_dir / "raw",
             coco128_dir=dataset_dir / "coco128",
@@ -184,6 +199,12 @@ def load_config(config_path: Path | None = None) -> AppConfig:
         setup=SetupConfig(
             train_split=float(setup_payload.get("train_split", 0.8)),
             random_seed=int(setup_payload.get("random_seed", 42)),
+        ),
+        augment=AugmentConfig(
+            scale_min=float(augment_payload.get("scale_min", 0.05)),
+            scale_max=float(augment_payload.get("scale_max", 0.35)),
+            min_objects=int(augment_payload.get("min_objects", 1)),
+            max_objects=int(augment_payload.get("max_objects", 6)),
         ),
         train=TrainConfig(
             model_name=str(train_payload.get("model_name", "yolo26n.pt")),

@@ -9,9 +9,6 @@ fetch *args:
 setup *args:
     uv run python cli.py setup {{args}}
 
-annotate *args:
-    uv run python cli.py annotate {{args}}
-
 augment background_dir *args:
     uv run python cli.py augment {{background_dir}} {{args}}
 

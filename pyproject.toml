@@ -3,6 +3,7 @@ name = "yolo-fine-tuning-pipeline"
 version = "0.1.0"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "albumentations>=2.0.8",
     "opencv-python>=4.13.0.92",
     "pandas>=2.3.0",
     "pillow>=11.0.0",
