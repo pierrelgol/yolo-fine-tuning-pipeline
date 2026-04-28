@@ -4,8 +4,8 @@
 
 ```bash
 just install          # uv sync — creates .venv
-just prepare          # fetch + setup (download coco128, unpack into dataset/)
-just augment <bg_dir> # composites images from images/<class>/ onto coco backgrounds
+just prepare          # fetch + setup + augment
+just augment [bg_dir] # composites images from images/<class>/ onto backgrounds
 just train            # builds dataset/train, trains model, logs to Trackio
 just eval             # evaluates latest trained weights
 just infer            # runs inference on dataset/augmented (default)
@@ -63,11 +63,12 @@ Subfolder names become class names. No manual annotation is needed — classes a
 Commands depend on prior steps producing artifacts:
 1. `fetch` → `dataset/raw/coco128.zip`
 2. `setup` → `dataset/coco128/`
-3. `augment <bg_dir>` → `dataset/augmented/` (required before `train`)
+3. `augment [bg_dir]` → `dataset/augmented/` (required before `train`)
 4. `train` → `dataset/train/` + weights at `dataset/train/best.pt` and `dataset/train/latest.pt`
 5. `eval` / `infer` / `watch` → consume trained weights
 
-`just prepare` combines fetch + setup.
+`just prepare` combines fetch + setup + augment. `augment` and `prepare`
+default to `[augment].background_dir` from `config.toml`.
 
 ## Augmentation
 
@@ -75,9 +76,10 @@ The augment step composites source images onto background images:
 - Source images come from `images/<class_name>/` subfolders
 - Class labels are inferred from subfolder names
 - Each background image gets N objects placed at random positions (N from `min_objects`..`max_objects` in config)
+- Class selection is balanced across the output dataset. If the configured number of backgrounds and `max_objects` cannot provide at least one object slot per class, augmentation fails with a clear error.
 - Object scale is randomized between `scale_min` and `scale_max` (fraction of background's shorter dimension)
-- YOLO labels cover the full pasted image area, scaled to background dimensions
-- Output is split into train/val using `setup.train_split` and `setup.random_seed`
+- YOLO labels are generated from the clipped pasted pixel rectangle and normalized to YOLO xywh format
+- Output is split into train/val using `setup.train_split` and `setup.random_seed`, with validation samples chosen greedily for class coverage before filling remaining slots.
 
 ## src/ Module Map
 

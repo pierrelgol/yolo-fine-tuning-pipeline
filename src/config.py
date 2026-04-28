@@ -3,6 +3,7 @@ from __future__ import annotations
 import tomllib
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 from src.common import resolve_path as resolve_common_path
 
@@ -10,12 +11,10 @@ from src.common import resolve_path as resolve_common_path
 @dataclass(frozen=True)
 class PathConfig:
     project_root: Path
-    image_dir: Path
     augment_source_dir: Path
     dataset_dir: Path
     raw_dir: Path
     coco128_dir: Path
-    annotation_dir: Path
     augmented_dir: Path
     train_dir: Path
     train_runs_dir: Path
@@ -47,10 +46,50 @@ class SetupConfig:
 
 @dataclass(frozen=True)
 class AugmentConfig:
+    background_dir: Path
     scale_min: float
     scale_max: float
     min_objects: int
     max_objects: int
+
+
+@dataclass(frozen=True)
+class NumericRangeConfig:
+    easy: float
+    hard: float
+
+
+@dataclass(frozen=True)
+class CurriculumRangeConfig:
+    hsv_h: NumericRangeConfig
+    hsv_s: NumericRangeConfig
+    hsv_v: NumericRangeConfig
+    degrees: NumericRangeConfig
+    translate: NumericRangeConfig
+    scale: NumericRangeConfig
+    shear: NumericRangeConfig
+    perspective: NumericRangeConfig
+    flipud: NumericRangeConfig
+    fliplr: NumericRangeConfig
+    bgr: NumericRangeConfig
+    mosaic: NumericRangeConfig
+    mixup: NumericRangeConfig
+    cutmix: NumericRangeConfig
+    copy_paste: NumericRangeConfig
+
+
+@dataclass(frozen=True)
+class AlbumentationTransformConfig:
+    enabled: bool
+    ranges: dict[str, NumericRangeConfig]
+
+
+@dataclass(frozen=True)
+class CurriculumConfig:
+    stages: int
+    main_epochs_per_stage: int
+    ranges: CurriculumRangeConfig
+    albumentations: dict[str, AlbumentationTransformConfig]
 
 
 @dataclass(frozen=True)
@@ -91,10 +130,10 @@ class TrainHyperparameterConfig:
 class TrainConfig:
     model_name: str
     image_size: int
-    epochs: int
     batch_size: int
     device: str
     hyperparameters: TrainHyperparameterConfig
+    curriculum: CurriculumConfig
 
 
 @dataclass(frozen=True)
@@ -155,10 +194,11 @@ def load_config(config_path: Path | None = None) -> AppConfig:
     watch_payload = payload.get("watch", {})
     tracking_payload = payload.get("tracking", {})
     hyperparameters_payload = train_payload.get("hyperparameters", {})
-
-    image_dir = resolve_path(
-        project_root, str(paths_payload.get("image_dir", "image"))
+    curriculum_payload = train_payload.get("curriculum", {})
+    curriculum_defaults_payload = curriculum_payload.get(
+        "detection_defaults", {}
     )
+
     augment_source_dir = resolve_path(
         project_root, str(paths_payload.get("augment_source_dir", "images"))
     )
@@ -172,12 +212,10 @@ def load_config(config_path: Path | None = None) -> AppConfig:
     return AppConfig(
         paths=PathConfig(
             project_root=project_root,
-            image_dir=image_dir,
             augment_source_dir=augment_source_dir,
             dataset_dir=dataset_dir,
             raw_dir=dataset_dir / "raw",
             coco128_dir=dataset_dir / "coco128",
-            annotation_dir=dataset_dir / "annotation",
             augmented_dir=dataset_dir / "augmented",
             train_dir=train_dir,
             train_runs_dir=train_dir / "runs",
@@ -203,6 +241,14 @@ def load_config(config_path: Path | None = None) -> AppConfig:
             random_seed=int(setup_payload.get("random_seed", 42)),
         ),
         augment=AugmentConfig(
+            background_dir=resolve_path(
+                project_root,
+                str(
+                    augment_payload.get(
+                        "background_dir", "dataset/coco128/images/train2017"
+                    )
+                ),
+            ),
             scale_min=float(augment_payload.get("scale_min", 0.05)),
             scale_max=float(augment_payload.get("scale_max", 0.35)),
             min_objects=int(augment_payload.get("min_objects", 1)),
@@ -211,7 +257,6 @@ def load_config(config_path: Path | None = None) -> AppConfig:
         train=TrainConfig(
             model_name=str(train_payload.get("model_name", "yolo26n.pt")),
             image_size=int(train_payload.get("image_size", 640)),
-            epochs=int(train_payload.get("epochs", 10)),
             batch_size=int(train_payload.get("batch_size", 8)),
             device=str(train_payload.get("device", "auto")),
             hyperparameters=TrainHyperparameterConfig(
@@ -241,69 +286,42 @@ def load_config(config_path: Path | None = None) -> AppConfig:
                 dfl_loss_gain=float(
                     hyperparameters_payload.get("dfl_loss_gain", 1.5)
                 ),
-                hsv_h=float(
-                    hyperparameters_payload.get("hsv_h", 0.015)
-                ),
-                hsv_s=float(
-                    hyperparameters_payload.get("hsv_s", 0.7)
-                ),
-                hsv_v=float(
-                    hyperparameters_payload.get("hsv_v", 0.4)
-                ),
-                degrees=float(
-                    hyperparameters_payload.get("degrees", 0.0)
-                ),
+                hsv_h=float(curriculum_defaults_payload.get("hsv_h", 0.015)),
+                hsv_s=float(curriculum_defaults_payload.get("hsv_s", 0.7)),
+                hsv_v=float(curriculum_defaults_payload.get("hsv_v", 0.4)),
+                degrees=float(curriculum_defaults_payload.get("degrees", 0.0)),
                 translate=float(
-                    hyperparameters_payload.get("translate", 0.1)
+                    curriculum_defaults_payload.get("translate", 0.1)
                 ),
-                scale=float(
-                    hyperparameters_payload.get("scale", 0.5)
-                ),
-                shear=float(
-                    hyperparameters_payload.get("shear", 0.0)
-                ),
+                scale=float(curriculum_defaults_payload.get("scale", 0.5)),
+                shear=float(curriculum_defaults_payload.get("shear", 0.0)),
                 perspective=float(
-                    hyperparameters_payload.get("perspective", 0.0)
+                    curriculum_defaults_payload.get("perspective", 0.0)
                 ),
-                flipud=float(
-                    hyperparameters_payload.get(
-                        "flipud", 0.0
-                    )
-                ),
-                fliplr=float(
-                    hyperparameters_payload.get(
-                        "fliplr", 0.5
-                    )
-                ),
-                bgr=float(
-                    hyperparameters_payload.get("bgr", 0.0)
-                ),
-                mosaic=float(
-                    hyperparameters_payload.get("mosaic", 1.0)
-                ),
+                flipud=float(curriculum_defaults_payload.get("flipud", 0.0)),
+                fliplr=float(curriculum_defaults_payload.get("fliplr", 0.5)),
+                bgr=float(curriculum_defaults_payload.get("bgr", 0.0)),
+                mosaic=float(curriculum_defaults_payload.get("mosaic", 1.0)),
                 close_mosaic=int(
-                    hyperparameters_payload.get("close_mosaic", 0)
+                    curriculum_defaults_payload.get("close_mosaic", 0)
                 ),
-                mixup=float(
-                    hyperparameters_payload.get("mixup", 0.0)
-                ),
-                cutmix=float(
-                    hyperparameters_payload.get("cutmix", 0.0)
-                ),
+                mixup=float(curriculum_defaults_payload.get("mixup", 0.0)),
+                cutmix=float(curriculum_defaults_payload.get("cutmix", 0.0)),
                 copy_paste=float(
-                    hyperparameters_payload.get("copy_paste", 0.0)
+                    curriculum_defaults_payload.get("copy_paste", 0.0)
                 ),
                 copy_paste_mode=str(
-                    hyperparameters_payload.get("copy_paste_mode", "flip")
+                    curriculum_defaults_payload.get("copy_paste_mode", "flip")
                 ),
                 auto_augment=str(
-                    hyperparameters_payload.get("auto_augment", "randaugment")
+                    curriculum_defaults_payload.get("auto_augment", "")
                 ),
                 erasing=float(
-                    hyperparameters_payload.get("erasing", 0.4)
+                    curriculum_defaults_payload.get("erasing", 0.0)
                 ),
                 workers=int(hyperparameters_payload.get("workers", 0)),
             ),
+            curriculum=load_curriculum_config(curriculum_payload),
         ),
         evaluate=EvalConfig(
             dataset_yaml=str(
@@ -358,3 +376,74 @@ def resolve_path(project_root: Path, configured_path: str) -> Path:
 
 def resolve_path_from_project(project_root: Path, configured_path: str) -> Path:
     return resolve_common_path(configured_path, base_dir=project_root)
+
+
+def load_curriculum_config(payload: dict[str, Any]) -> CurriculumConfig:
+    ranges_payload = payload.get("ranges", {})
+    albumentations_payload = payload.get("albumentations", {})
+    return CurriculumConfig(
+        stages=max(1, int(payload.get("stages", 1))),
+        main_epochs_per_stage=max(
+            0, int(payload.get("main_epochs_per_stage", 1))
+        ),
+        ranges=CurriculumRangeConfig(
+            hsv_h=read_range(ranges_payload, "hsv_h", (0.0, 0.015)),
+            hsv_s=read_range(ranges_payload, "hsv_s", (0.0, 0.7)),
+            hsv_v=read_range(ranges_payload, "hsv_v", (0.0, 0.4)),
+            degrees=read_range(ranges_payload, "degrees", (0.0, 0.0)),
+            translate=read_range(ranges_payload, "translate", (0.0, 0.1)),
+            scale=read_range(ranges_payload, "scale", (0.0, 0.5)),
+            shear=read_range(ranges_payload, "shear", (0.0, 0.0)),
+            perspective=read_range(
+                ranges_payload, "perspective", (0.0, 0.0)
+            ),
+            flipud=read_range(ranges_payload, "flipud", (0.0, 0.0)),
+            fliplr=read_range(ranges_payload, "fliplr", (0.0, 0.5)),
+            bgr=read_range(ranges_payload, "bgr", (0.0, 0.0)),
+            mosaic=read_range(ranges_payload, "mosaic", (0.0, 1.0)),
+            mixup=read_range(ranges_payload, "mixup", (0.0, 0.0)),
+            cutmix=read_range(ranges_payload, "cutmix", (0.0, 0.0)),
+            copy_paste=read_range(
+                ranges_payload, "copy_paste", (0.0, 0.0)
+            ),
+        ),
+        albumentations={
+            str(name): read_albumentation_transform_config(
+                transform_payload
+            )
+            for name, transform_payload in albumentations_payload.items()
+            if isinstance(transform_payload, dict)
+        },
+    )
+
+
+def read_range(
+    payload: dict[str, Any],
+    name: str,
+    default: tuple[float, float],
+) -> NumericRangeConfig:
+    value = payload.get(name, default)
+    if isinstance(value, (int, float)):
+        easy = hard = float(value)
+    elif isinstance(value, list | tuple) and len(value) == 2:
+        easy = float(value[0])
+        hard = float(value[1])
+    else:
+        raise ValueError(
+            f"Expected {name!r} to be a number or two-value range"
+        )
+    return NumericRangeConfig(easy=easy, hard=hard)
+
+
+def read_albumentation_transform_config(
+    payload: dict[str, Any]
+) -> AlbumentationTransformConfig:
+    ranges: dict[str, NumericRangeConfig] = {}
+    for name in payload:
+        if name == "enabled":
+            continue
+        ranges[name] = read_range(payload, name, (0.0, 0.0))
+    return AlbumentationTransformConfig(
+        enabled=bool(payload.get("enabled", False)),
+        ranges=ranges,
+    )

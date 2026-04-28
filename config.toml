@@ -11,6 +11,7 @@ train_split = 0.8
 random_seed = 42
 
 [augment]
+background_dir = "dataset/coco128/images/train2017"
 scale_min = 0.05
 scale_max = 0.35
 min_objects = 1

@@ -52,9 +52,7 @@ This project is intentionally CUDA-first on Windows through the PyTorch CUDA ind
 ## Typical Flow
 
 ```text
-just fetch
-just setup
-just augment dataset/coco128/images/train2017
+just prepare
 just train
 just eval
 just infer
@@ -67,8 +65,8 @@ just visualize
 
 - `just fetch`: download the base dataset archive into `dataset/raw`
 - `just setup`: validate `images/<class_name>/`, unpack the archive into `dataset/coco128`, and write source class metadata
-- `just prepare`: run fetch and setup in sequence
-- `just augment <background_dir>`: build a baseline synthetic detection dataset in `dataset/augmented`
+- `just augment [background_dir]`: build a baseline synthetic detection dataset in `dataset/augmented`
+- `just prepare`: run fetch, setup, and augment in sequence
 - `just train`: build `dataset/train`, run curriculum fine-tuning, save stable weights, log to Trackio
 - `just eval`: evaluate the latest trained weights
 - `just infer`: run inference on the augmented validation split by default
@@ -99,3 +97,5 @@ uv run python cli.py train --epochs 2 --batch 16
 ```
 
 `--epochs` overrides `train.curriculum.main_epochs_per_stage`. Each curriculum stage still runs one easy epoch, the requested current-difficulty epochs, and one hard epoch.
+
+`prepare` and `augment` default to `[augment].background_dir`, which is `dataset/coco128/images/train2017` in the checked-in config.

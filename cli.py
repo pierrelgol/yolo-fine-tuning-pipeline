@@ -32,8 +32,11 @@ def build_parser() -> argparse.ArgumentParser:
     setup_parser.add_argument("--archive", type=Path)
     setup_parser.add_argument("--force", action="store_true")
 
-    augment_parser = subparsers.add_parser("augment", help="Build augmented samples by compositing images onto backgrounds")
-    augment_parser.add_argument("background_dir", type=Path)
+    augment_parser = subparsers.add_parser(
+        "augment",
+        help="Build augmented samples by compositing source classes onto backgrounds",
+    )
+    augment_parser.add_argument("background_dir", nargs="?", type=Path)
     augment_parser.add_argument("--source-image-dir", type=Path)
     augment_parser.add_argument("--output-dir", type=Path)
 
@@ -68,10 +71,15 @@ def build_parser() -> argparse.ArgumentParser:
     watch_parser.add_argument("--conf", type=float)
     watch_parser.add_argument("--imgsz", type=int)
 
-    prepare_parser = subparsers.add_parser("prepare", help="Run fetch and setup in sequence")
+    prepare_parser = subparsers.add_parser(
+        "prepare", help="Run fetch, setup, and augment in sequence"
+    )
     prepare_parser.add_argument("--url")
     prepare_parser.add_argument("--filename")
     prepare_parser.add_argument("--archive", type=Path)
+    prepare_parser.add_argument("--background-dir", type=Path)
+    prepare_parser.add_argument("--source-image-dir", type=Path)
+    prepare_parser.add_argument("--output-dir", type=Path)
     prepare_parser.add_argument("--force", action="store_true")
 
     subparsers.add_parser("clean", help="Remove every generated artifact")
@@ -141,6 +149,12 @@ def main() -> None:
     if args.command == "prepare":
         fetch_dataset(config, dataset_url=args.url, archive_name=args.filename)
         prepare_dataset(config, archive_path=args.archive, force=args.force)
+        augment_with_annotations(
+            config,
+            background_dir=args.background_dir,
+            source_image_dir=args.source_image_dir,
+            output_dir=args.output_dir,
+        )
         return
 
     if args.command == "watch":

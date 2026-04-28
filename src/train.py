@@ -30,7 +30,6 @@ from src.common import (
     resolve_path,
     save_class_map,
     save_yolo_labels,
-    split_items,
     write_dataset_yaml,
     write_json,
     yolo_label_line,
@@ -81,6 +80,8 @@ def train_model(
         if epochs is None
         else epochs
     )
+    if selected_epochs < 0:
+        raise ValueError("--epochs must be zero or greater")
     selected_image_size = (
         config.train.image_size if image_size is None else image_size
     )
@@ -190,7 +191,10 @@ def train_model(
                 lrf=config.train.hyperparameters.final_learning_rate_factor,
                 momentum=config.train.hyperparameters.momentum,
                 weight_decay=config.train.hyperparameters.weight_decay,
-                warmup_epochs=config.train.hyperparameters.warmup_epochs,
+                warmup_epochs=min(
+                    config.train.hyperparameters.warmup_epochs,
+                    float(phase.epochs),
+                ),
                 box=config.train.hyperparameters.box_loss_gain,
                 cls=config.train.hyperparameters.class_loss_gain,
                 dfl=config.train.hyperparameters.dfl_loss_gain,
