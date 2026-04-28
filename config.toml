@@ -16,6 +16,7 @@ scale_min = 0.05
 scale_max = 0.35
 min_objects = 1
 max_objects = 6
+min_class_appearances = 10
 
 [train]
 model_name = "yolo26n.pt"

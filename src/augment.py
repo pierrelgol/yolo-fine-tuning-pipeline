@@ -78,11 +78,13 @@ def augment_with_annotations(
     scale_max = config.augment.scale_max
     min_objects = config.augment.min_objects
     max_objects = config.augment.max_objects
+    min_class_appearances = config.augment.min_class_appearances
     validate_augment_settings(
         scale_min=scale_min,
         scale_max=scale_max,
         min_objects=min_objects,
         max_objects=max_objects,
+        min_class_appearances=min_class_appearances,
     )
 
     clear_dir(augmented_dataset_dir)
@@ -105,6 +107,7 @@ def augment_with_annotations(
         scale_max=scale_max,
         min_objects=min_objects,
         max_objects=max_objects,
+        min_class_appearances=min_class_appearances,
         seed=config.setup.random_seed,
     )
 
@@ -137,6 +140,7 @@ def augment_with_annotations(
         "classes": ordered_class_names(class_map),
         "num_train_samples": len(generated_train),
         "num_val_samples": len(generated_val),
+        "min_class_appearances": min_class_appearances,
         "class_counts": count_planned_classes(all_samples, class_map),
         "class_balance": summarize_class_balance(all_samples, class_map),
         "train_class_balance": summarize_class_balance(
@@ -207,6 +211,7 @@ def generate_augmented_samples(
     scale_max: float,
     min_objects: int,
     max_objects: int,
+    min_class_appearances: int,
     seed: int,
 ) -> list[AugmentedSample]:
     rng = random.Random(seed)
@@ -222,19 +227,40 @@ def generate_augmented_samples(
         num_classes=len(class_ids),
         min_objects=min_objects,
         max_objects=max_objects,
+        min_class_appearances=min_class_appearances,
         rng=rng,
     )
+    required_class_ids = plan_required_class_ids(
+        class_ids, min_class_appearances, rng
+    )
 
-    for bg_path, num_objects in zip(background_paths, object_counts, strict=True):
+    for sample_index, num_objects in enumerate(object_counts):
+        bg_path = background_paths[sample_index % len(background_paths)]
         with Image.open(bg_path) as bg_img:
             bg_width, bg_height = bg_img.size
 
         num_objects = min(num_objects, len(class_ids))
         objects: list[PlannedObject] = []
+        selected_class_ids: list[int] = []
 
-        for class_id in choose_balanced_classes(
-            class_ids, class_counts, num_objects, rng
-        ):
+        if sample_index < len(required_class_ids):
+            selected_class_ids.append(required_class_ids[sample_index])
+
+        remaining_class_ids = [
+            class_id
+            for class_id in class_ids
+            if class_id not in set(selected_class_ids)
+        ]
+        selected_class_ids.extend(
+            choose_balanced_classes(
+                remaining_class_ids,
+                class_counts,
+                num_objects - len(selected_class_ids),
+                rng,
+            )
+        )
+
+        for class_id in selected_class_ids:
             src = rng.choice(images_by_class[class_id])
             class_counts[class_id] += 1
             scale = rng.uniform(scale_min, scale_max)
@@ -258,7 +284,9 @@ def generate_augmented_samples(
             f"{o.source.class_id}:{o.scale:.3f}:{o.x:.3f}:{o.y:.3f}"
             for o in objects
         )
-        sample_name = stable_name(bg_key, obj_key, suffix="")
+        sample_name = stable_name(
+            f"{sample_index}:{bg_key}", obj_key, suffix=""
+        )
 
         samples.append(
             AugmentedSample(
@@ -272,7 +300,11 @@ def generate_augmented_samples(
 
 
 def validate_augment_settings(
-    scale_min: float, scale_max: float, min_objects: int, max_objects: int
+    scale_min: float,
+    scale_max: float,
+    min_objects: int,
+    max_objects: int,
+    min_class_appearances: int,
 ) -> None:
     if scale_min <= 0 or scale_max <= 0:
         raise ValueError("augment scale_min and scale_max must be positive")
@@ -282,6 +314,8 @@ def validate_augment_settings(
         raise ValueError("augment min_objects must be at least 1")
     if max_objects < min_objects:
         raise ValueError("augment max_objects cannot be less than min_objects")
+    if min_class_appearances < 1:
+        raise ValueError("augment min_class_appearances must be at least 1")
 
 
 def plan_object_counts(
@@ -289,30 +323,27 @@ def plan_object_counts(
     num_classes: int,
     min_objects: int,
     max_objects: int,
+    min_class_appearances: int,
     rng: random.Random,
 ) -> list[int]:
-    max_total_objects = num_backgrounds * max_objects
-    if max_total_objects < num_classes:
-        raise ValueError(
-            "Not enough object slots to represent every class. "
-            f"Need at least {num_classes} slots, but {num_backgrounds} "
-            f"backgrounds * max_objects={max_objects} gives {max_total_objects}."
-        )
-
+    num_samples = max(num_backgrounds, num_classes * min_class_appearances)
     object_counts = [
-        rng.randint(min_objects, max_objects) for _ in range(num_backgrounds)
+        rng.randint(min_objects, max_objects) for _ in range(num_samples)
     ]
-    while sum(object_counts) < num_classes:
-        expandable_indices = [
-            index
-            for index, count in enumerate(object_counts)
-            if count < max_objects
-        ]
-        if not expandable_indices:
-            break
-        index = rng.choice(expandable_indices)
-        object_counts[index] += 1
     return object_counts
+
+
+def plan_required_class_ids(
+    class_ids: list[int],
+    min_class_appearances: int,
+    rng: random.Random,
+) -> list[int]:
+    required_class_ids: list[int] = []
+    for _ in range(min_class_appearances):
+        shuffled_class_ids = list(class_ids)
+        rng.shuffle(shuffled_class_ids)
+        required_class_ids.extend(shuffled_class_ids)
+    return required_class_ids
 
 
 def choose_balanced_classes(

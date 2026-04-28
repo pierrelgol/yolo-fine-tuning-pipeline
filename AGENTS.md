@@ -76,7 +76,8 @@ The augment step composites source images onto background images:
 - Source images come from `images/<class_name>/` subfolders
 - Class labels are inferred from subfolder names
 - Each background image gets N objects placed at random positions (N from `min_objects`..`max_objects` in config)
-- Class selection is balanced across the output dataset. If the configured number of backgrounds and `max_objects` cannot provide at least one object slot per class, augmentation fails with a clear error.
+- `min_class_appearances` controls baseline coverage. A value of `10` makes each class the required object in at least 10 separate composite images. When this requires more samples than the available background count, backgrounds are reused with new random placement and scale.
+- Extra objects are selected from the least-used classes so class selection stays balanced across the output dataset.
 - Object scale is randomized between `scale_min` and `scale_max` (fraction of background's shorter dimension)
 - YOLO labels are generated from the clipped pasted pixel rectangle and normalized to YOLO xywh format
 - Output is split into train/val using `setup.train_split` and `setup.random_seed`, with validation samples chosen greedily for class coverage before filling remaining slots.

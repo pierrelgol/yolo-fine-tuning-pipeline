@@ -51,6 +51,7 @@ class AugmentConfig:
     scale_max: float
     min_objects: int
     max_objects: int
+    min_class_appearances: int
 
 
 @dataclass(frozen=True)
@@ -253,6 +254,9 @@ def load_config(config_path: Path | None = None) -> AppConfig:
             scale_max=float(augment_payload.get("scale_max", 0.35)),
             min_objects=int(augment_payload.get("min_objects", 1)),
             max_objects=int(augment_payload.get("max_objects", 6)),
+            min_class_appearances=max(
+                1, int(augment_payload.get("min_class_appearances", 1))
+            ),
         ),
         train=TrainConfig(
             model_name=str(train_payload.get("model_name", "yolo26n.pt")),
