@@ -100,4 +100,4 @@ uv run python cli.py train --epochs 2 --batch 16
 
 `prepare` and `augment` default to `[augment].background_dir`, which is `dataset/coco128/images/train2017` in the checked-in config.
 
-Curriculum epochs are one continuous Ultralytics training run. Each epoch resumes from the prior `last.pt`, preserving optimizer, scaler, EMA, scheduler progress, and the auto-selected batch size while increasing the augmentation difficulty.
+Curriculum epochs run inside one continuous Ultralytics trainer. The trainer updates augmentation transforms at epoch boundaries, so optimizer, scaler, EMA, scheduler progress, and the auto-selected batch size remain live until the full curriculum finishes.
